@@ -5,23 +5,19 @@ start() ->
 	st_init().
 
 st_init() ->
-	io:format("initializing").
+	io:format("fsm: initializing").
 	fsm_handler ! {initializing},
 	receive ev_ground_floor_reached ->
 		fsm_handler ! {init_complete}
-		io:format("elevator initialized, behold my initial glory").
+		io:format("fsm: elevator initialized, behold my initial glory").
 	end,
 
 	st_idle().
 
 st_idle() ->
-	io:format("elevator idle").
+	io:format("fsm: elevator idle").
 	fsm_handler ! {idle},
 	receive 
-		ev_new_call ->
-			io:format("call recieved"),
-			st_idle();
-
 		order_recieved ->
 			st_moving();
 
@@ -36,7 +32,7 @@ st_moving() ->
 	fsm_handler ! {moving},
 	receive 
 		destination_reached ->
-			io:format("destination reached"),
+			io:format("fsm: destination reached"),
 			st_doors_open();
 
 		ev_emergency_stop ->
@@ -50,10 +46,14 @@ st_doors_open() ->
 	receive
 		order_recieved ->
 			st_moving()
+
+	after 2000 ->
+		fsm_handler ! {doors_close}.
+		st_idle().
 	end.
 
 st_emergency() ->
-	io:format("emergency state activated").
+	io:format("fsm: emergency state activated").
 	fsm_handler ! {emergency}.
 	receive
 		order_recieved ->
