@@ -1,6 +1,11 @@
 -module(watchdog).
 -export([kill/2, start/2, start_handler/0]).
 
+% the watchdog timer is to have control over
+% the completion of individual processes, which
+% can spawn and kill watchdogs as a safety net
+% that monitors the process
+
 watchdog(WDHandler, Data, Timeout) ->
 	receive
 		{kill, Data} ->
@@ -29,7 +34,7 @@ watchdog_handler(Watchdogs) ->
 			io:format("wd_handler: fresh dog: ~p~n", [self(), Data]),
 			watchdog_handler([FreshWD|Watchdogs]);
 
-		{WDPID, timeout, Data} ->
+		{WDPID, kick, Data} ->
 			WDUpdated = lists:delete(WDPID, Watchdogs), %lists:delete(Elem, List)
 			watchdog_handler(WDPID);
 		{WDPID, dead} ->
@@ -45,6 +50,7 @@ kill(WDHandler, Data) ->
 	WDHandler ! {kill, Data}.
 
 start(WDHandler, Data) ->
+	io:format("wd: releasing the hounds"),
 	WDHandler ! {kick, Data}.
 
 start_handler() ->

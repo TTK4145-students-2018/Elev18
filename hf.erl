@@ -1,6 +1,10 @@
--module(hf).
+-module(hf). %"helper functions"
 -export([fac/2, flip/1]).
 
+% simple helper functions that can be used
+% by all modules
+
+%TODO:
 
 fac(0,A) when A /= 0 -> 0; %0^A = 0
 fac(_,0) -> 1; %N^0 = 1

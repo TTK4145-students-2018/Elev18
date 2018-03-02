@@ -1,6 +1,13 @@
 -module(fsm).
 -export([start/0]).
 
+% the finite state machine of our system
+% is to have control over the internal
+% state of the node it runs on,
+% based on events received from the driver
+
+%TODO:
+
 start() ->
 	st_init().
 
