@@ -1,5 +1,5 @@
 -module(watchdog).
--export([]).
+-export([kill/2, start/2, start_handler/0]).
 
 watchdog(WDHandler, Data, Timeout) ->
 	receive
@@ -8,14 +8,12 @@ watchdog(WDHandler, Data, Timeout) ->
 			WDHandler ! {WDPID, dead},
 			io:format("wd_watchdog: watchdog died: ~p~n", [self(), Data]),
 			exit(self(), normal) %exit(PID, reason)
-
 	after
 		Timeout ->
 			WDPID = self(),
 			WDHandler ! {WDPID, kick, Data},
 			io:format("wd_watchdog: timed out, kicking the dog: ~p~n", [self(), Data]),
 			exit(self(), normal)
-
 	end.
 
 
@@ -27,7 +25,7 @@ watchdog_handler(Watchdogs) ->
 			watchdog_handler(Watchdogs);
 		{kick, Data} ->
 			DogeHandler = self(),
-			FreshWD = spawn(fun() -> watchdog(DogeHandler, Data, 10000) end),
+			FreshWD = spawn(fun() -> watchdog(DogeHandler, Data, 10000) end), %10000ms = 10s
 			io:format("wd_handler: fresh dog: ~p~n", [self(), Data]),
 			watchdog_handler([FreshWD|Watchdogs]);
 
@@ -41,7 +39,6 @@ watchdog_handler(Watchdogs) ->
 		Other ->
 			io:format("wd_handler: don't know what this means: ~p~n", [Other]),
 			watchdog_handler(Watchdogs)
-
 	end.
 
 kill(WDHandler, Data) ->
@@ -49,7 +46,6 @@ kill(WDHandler, Data) ->
 
 start(WDHandler, Data) ->
 	WDHandler ! {kick, Data}.
-
 
 start_handler() ->
 	spawn(fun() -> watchdog_handler([]) end).
