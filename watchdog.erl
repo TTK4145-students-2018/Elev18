@@ -29,8 +29,8 @@ watchdog_handler(Watchdogs) ->
 			lists:foreach(fun(WDPID) -> WDPID ! {kill, Data} end, Watchdogs),
 			watchdog_handler(Watchdogs);
 		{kick, Data} ->
-			DogeHandler = self(),
-			FreshWD = spawn(fun() -> watchdog(DogeHandler, Data, 10000) end), %10000ms = 10s
+			WDHandler = self(),
+			FreshWD = spawn(fun() -> watchdog(WDHandler, Data, 10000) end), %10000ms = 10s
 			io:format("wd_handler: fresh dog: ~p~n", [self(), Data]),
 			watchdog_handler([FreshWD|Watchdogs]);
 
