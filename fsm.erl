@@ -1,5 +1,5 @@
 -module(fsm).
--export([start/0]).
+-export([start/1]).
 
 % the finite state machine of our system
 % is to have control over the internal
