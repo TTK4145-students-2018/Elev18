@@ -8,6 +8,10 @@
 
 start(FSM) ->
 	spawn(fun() -> poller(FSM) end).
+	EH = spawn(fun() -> event_handler(FSM) end).
 
 poller(FSM) ->
-	fdsfdsa.
+	end.
+
+event_handler(FSM) ->
+	end.
