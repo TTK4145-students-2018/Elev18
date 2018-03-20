@@ -1,4 +1,4 @@
--module(elevator_interface).
+-module(driver).
 
 -behaviour(gen_server).
 

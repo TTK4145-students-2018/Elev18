@@ -7,4 +7,4 @@
 %TODO
 
 start() ->
-	FSM = spawn(fun() -> fsm:start()end).
+	FSM = fsm:start(Driver) %%no idea if this is right
