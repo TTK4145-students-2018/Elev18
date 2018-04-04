@@ -18,12 +18,17 @@ net_init() ->
 	NodeName = list_to_atom("elevator@" ++ format_IP(IP)), 	% generates a unique nodename
 
  	net_kernel:start([NodeName, longnames, 500]),			% Creates node with heartbeat of 500 milliseconds 
- 	erlang:set_cookie(node(), 'connector'),
+ 	erlang:set_cookie(node(), 'glue'),
 
 	Hosts = net_adm:host_file(),
-	Hosts. 	
+	Hosts.
 
-% Formats IP from a tuple to a string
+
+
+
+
+
+% Formats IP from a tuple to a string - from Sivertba's ErlangHeis
 format_IP(IPtuple) ->
 	[_Head | IPlist] = lists:flatmap(fun(X) -> ['.', X] end, tuple_to_list(IPtuple)),
 	lists:concat(IPlist).
