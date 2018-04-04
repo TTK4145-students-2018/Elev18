@@ -10,7 +10,10 @@ start(FSM) ->
 	spawn(fun() -> poller(FSM) end).
 	EH = spawn(fun() -> event_handler(FSM) end).
 
-poller(FSM) ->
+sensor_poller(FSM) ->
+	end.
+
+button_poller(FSM) ->
 	end.
 
 event_handler(FSM) ->

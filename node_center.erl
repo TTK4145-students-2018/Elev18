@@ -7,4 +7,5 @@
 %TODO
 
 start() ->
-	FSM = fsm:start(Driver) %%no idea if this is right
+	FSM = fsm:start(Driver), %%no idea if this is right
+	EM = event_manager:start(FSM).
