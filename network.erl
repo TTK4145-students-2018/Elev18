@@ -15,10 +15,13 @@ net_init() ->
 
 	{ok, IPlist} = inet:getif(), 							% inet:getif() gives a list of tuples of IPs
 	IP = element(1, hd(IPlist)), 							% Header of IPlist is local IP adress
-	NodeName = list_to_atom("heis@" ++ format_IP(IP)). 		% 
+	NodeName = list_to_atom("elevator@" ++ format_IP(IP)), 	% generates a unique nodename
 
- 	net_kernel:start()
+ 	net_kernel:start([NodeName, longnames, 500]),			% Creates node with heartbeat of 500 milliseconds 
+ 	erlang:set_cookie(node(), 'connector'),
 
+	Hosts = net_adm:host_file(),
+	Hosts. 	
 
 % Formats IP from a tuple to a string
 format_IP(IPtuple) ->
