@@ -1,0 +1,21 @@
+Message format
+
+Worldview
+includes
+	state						{init, moving, idle, doors_open, emergency}
+	last_floor					{1, 2, 3, 4}
+	dir							{UP, DOWN, STOP}
+	ID 							{_}
+	local_orders 				{1, 2, 3, 4}
+	#%//(destination)//
+format
+	tuple
+
+
+Hall Order
+includes
+	floor 						{1, 2, 3, 4}
+	dir							{UP, DOWN}
+	ID 							{_}
+format
+	tuple
