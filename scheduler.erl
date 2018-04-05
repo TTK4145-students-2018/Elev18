@@ -1,5 +1,5 @@
 -module(scheduler).
--export([]).
+-export([get_cost/2]).
 
 % Calculates cost, and determines whether it is optimal 
 % for this elevator to perform a task instead of one of the
@@ -11,4 +11,15 @@
 % TODO:
 % 
 
-evaluate(PID, )
+get_cost(Orders, NewOrder) ->
+	case lists:member(NewOrder, Orders) of
+		true -> 0;
+		false -> 1
+	end.
+
+%get_distance([Orders], Order) ->
+%	end.
+	% returns the number of floors the new order
+	% is away from the state of the elevator (considering
+	% current floor, and direction)
+	% {Floor, Direction} = driver:get_state(),

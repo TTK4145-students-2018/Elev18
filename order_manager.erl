@@ -20,12 +20,3 @@ remove_order(Orders, Order) ->
 		true -> Orders -- [Order];
 		false -> Orders
 	end.
-
-get_cost(Orders, NewOrder) ->
-	
-%get_distance([Orders], Order) ->
-%	end.
-	% returns the number of floors the new order
-	% is away from the state of the elevator (considering
-	% current floor, and direction)
-	% {Floor, Direction} = driver:get_state(),

@@ -11,6 +11,9 @@
 % interface with a poller that sends events
 % FIND OUT IF EVENT_MANAGER SHOULD SEE IF DEST REACHED
 % OR IF FSM SHOULD ASK ORDER_MANAGER?
+% add worldview tuple {State, LastFloor, Dir, ID, LocalOrders}
+% to all states
+
 
 start(Driver) ->
 	spawn(fun() -> st_init(Driver) end).
