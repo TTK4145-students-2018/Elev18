@@ -9,6 +9,8 @@
 % decisions based on correct information about the entire system. 
 
 % TODO:
+% Calculate cost of moving a number of floors
+% Calculate cost of changing direction
 % 
 
 get_cost(Orders, NewOrder) ->
