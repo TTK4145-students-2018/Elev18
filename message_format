@@ -6,10 +6,11 @@ includes
 	last_floor					{1, 2, 3, 4}
 	dir							{UP, DOWN, STOP}
 	ID 							{_}
-	local_orders 				{1, 2, 3, 4}
+	local_orders 				[{1, 2, 3, 4}]
 	#%//(destination)//
 format
 	tuple
+==> {state, LastFloor, LocalOrders, dir, ID}
 
 
 Hall Order

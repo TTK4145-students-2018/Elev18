@@ -16,7 +16,7 @@
 
 
 start(Driver) ->
-	spawn(fun() -> st_init(Driver) end).
+	spawn(fun() -> st_init(Driver) end),
 	spawn(fun() -> driver:start()). %is this right to make gen_server work?
 
 st_init(Driver) ->
