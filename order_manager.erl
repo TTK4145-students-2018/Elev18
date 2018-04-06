@@ -20,3 +20,8 @@ remove_order(Orders, Order) ->
 		true -> Orders -- [Order];
 		false -> Orders
 	end.
+
+
+% Unsure where to put this, but if worldview is stored here then maybe this is the place
+set_ID(NewID) ->
+	ID = NewID.

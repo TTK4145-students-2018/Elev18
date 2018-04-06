@@ -10,6 +10,9 @@
 
 % TODO:
 % use worldview tuple
+% Calculate cost of moving a number of floors
+% Calculate cost of changing direction
+% 
 
 get_cost(Orders, NewOrder) ->
 	case lists:member(NewOrder, Orders) of
