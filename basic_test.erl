@@ -7,9 +7,11 @@
 % then move between the first and fourth floor
 
 start() ->
-	%{ok, DriverPid} = driver:start(), this is the example code, but doesn't work... whyh??
+	%{ok, DriverPid} = driver:start(), %this is the example code, but doesn't work... whyh??
 	DriverPid = driver:start(),
-	init_drive(DriverPid).
+	%io:format(DriverPid),
+	DriverPid.
+	%init_drive(DriverPid).
 
 init_drive(DriverPid) ->
 	FloorState = driver:get_floor_sensor_state(DriverPid),
