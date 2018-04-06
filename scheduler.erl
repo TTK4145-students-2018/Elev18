@@ -9,7 +9,7 @@
 % decisions based on correct information about the entire system. 
 
 % TODO:
-% 
+% use worldview tuple
 
 get_cost(Orders, NewOrder) ->
 	case lists:member(NewOrder, Orders) of
@@ -17,8 +17,8 @@ get_cost(Orders, NewOrder) ->
 		false -> 1
 	end.
 
-%get_distance([Orders], Order) ->
-%	end.
+get_distance([Orders], Order) ->
+	end.
 	% returns the number of floors the new order
 	% is away from the state of the elevator (considering
 	% current floor, and direction)
