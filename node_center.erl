@@ -7,5 +7,7 @@
 %TODO
 
 start() ->
-	FSM = fsm:start(Driver), %%no idea if this is right
-	EM = event_manager:start(FSM).
+	register(fsm, fsm:start()),
+	register(order_manager, order_manager:start()),
+	register(driver, driver:start()),
+	register(event_manager, event_manager:start()).

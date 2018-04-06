@@ -14,101 +14,101 @@
 % add worldview tuple {State, LastFloor, Dir, ID, LocalOrders}
 % to all states
 
+%WorldView ~ {ID, state, LastFloor, LocalOrders, dir}
+% access elements with: element(x, WorldView)
+% ex. element(1, WorldView) returns ID
 
-start(Driver) ->
-	spawn(fun() -> st_init(Driver) end),
-	spawn(fun() -> driver:start()). %is this right to make gen_server work?
+start(ID) ->
+	spawn(fun() -> st_init(ID) end).
 
-st_init(Driver) ->
+st_init(ID) ->
 	io:format("fsm: initializing ~n"),
-	driver:set_motor_direction(Driver, down),
-	receive ev_ground_floor_reached ->
-		io:format("fsm: elevator initialized, behold my initial glory ~n"),
-		driver:set_motor_direction(Driver, stop),
-		st_idle(Driver);
+	driver:set_motor_direction(driver, down),
+	receive 
+		ev_ground_floor_reached ->
+			io:format("fsm: elevator initialized, behold my initial glory ~n"),
+			driver:set_motor_direction(driver, stop),
+			WorldView = {ID, idle, 1, [], stop},
+			st_idle(WorldView);
 		Other ->
 			io:format("fsm_init: received garbage: ~p~n", [Other]),
-			st_init(Driver)
+			st_init(ID)
 
 	after 10000 ->
 		io:format("fsm: init timed out, trying again ~n"),
-		st_init(Driver)
+		st_init(ID)
 	end.
 
 
-st_idle(Driver) ->
+st_idle(WorldView) ->
 	io:format("fsm: elevator idle ~n"),
 	receive 
 		ev_order_received ->
-			st_moving(Driver);
+			st_moving();
 
 		ev_emergency_stop ->
-			st_emergency(Driver);
+			st_emergency();
 
 		Other ->
 			io:format("fsm_idle: received garbage: ~p~n", [Other]),
-			st_idle(Driver)
+			st_idle()
 	end.
 
 
-st_moving(Driver) ->
+st_moving() ->
 	io:format("fsm: moving ~n"),
-	driver:set_motor_direction(Driver, get_direction(Driver))
+	driver:set_motor_direction(driver, get_direction(driver)),
 	receive 
-		{ev_floor_passed, floor} ->
-			driver:set_floor_indicator(Driver, floor);
+		{ev_floor_passed, Floor} ->
+			driver:set_floor_indicator(driver, Floor);
 
-		{ev_destination_reached, floor} ->
+		{ev_destination_reached, Floor} ->
 			io:format("fsm: destination reached ~n"),
-			driver:set_floor_indicator(Driver, floor),
-			driver:set_motor_direction(Driver, stop),
-			st_doors_open(Driver);
+			driver:set_floor_indicator(driver, Floor),
+			driver:set_motor_direction(driver, stop),
+			order_manager ! {remove, Floor},
+			st_doors_open();
 
 		ev_emergency_stop ->
-			st_emergency(Driver);
+			st_emergency();
 
 		Other ->
 			io:format("fsm_moving: received garbage: ~p~n", [Other]),
-			st_moving(Driver)
+			st_moving()
 
 	end.
 
-st_doors_open(Driver) ->
+st_doors_open() ->
 	io:format("doors opened ~n"),
-	driver:set_door_open_light(Driver, on),
-
-	after 2000 ->
-		driver:set_door_open_light(Driver, off)
-		receive
-			ev_order_received ->
-				st_moving(Driver);
+	driver:set_door_open_light(driver, on),
 	
-			Other ->
-				io:format("fsm_doors_open: received garbage: ~p~n", [Other])
+	receive
+	after
+		2000 ->
+			driver:set_door_open_light(driver, off),
+			st_moving()
+	end.
 
-		st_idle(Driver)
-		end.
-
-st_emergency(Driver) ->
+st_emergency() ->
 	io:format("fsm: emergency state activated ~n"),
-	driver:set_motor_direction(Driver, stop),
-	driver:set_stop_button_light(Driver, on),
+	driver:set_motor_direction(driver, stop),
+	driver:set_stop_button_light(driver, on),
+	order_manager ! {clear},
 	receive
 		ev_order_received ->
-			st_moving(Driver);
+			st_moving();
 
 		ev_emergency_stop ->
-			st_emergency(Driver);
+			st_emergency();
 
 		Other ->
 			io:format("fsm_emergency: received garbage: ~p~n", [Other]),
-			st_emergency(Driver)
-
+			st_emergency()
 	end.
 
 
-get_direction(Driver) -> 
-    Driver ! {direction, request, self()},
+get_direction(driver) -> 
+    driver ! {direction, request, self()},
     receive
 		{direction, response, Direction} ->
 	    	Direction

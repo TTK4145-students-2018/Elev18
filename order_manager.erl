@@ -1,5 +1,5 @@
 -module(order_manager).
--export([start/0, add_order/2, remove_order/2]).
+-compile(export_all).
 
 start() ->
 	spawn(fun() -> order_manager([]) end).
@@ -15,11 +15,14 @@ order_manager(Orders) ->
 			io:format("order_manager: removing floor: ~p~n", [Floor]),
 			NewOrders = remove_order(Orders, Floor),
 			order_manager(NewOrders);
+		{clear} ->
+			io:format("order_manager: clearing orders ~n"),
+			order_manager([]);
 		{get_first, Pid} ->
 			Pid ! get_first(Orders),
 			order_manager(Orders);
 		{get_all, Pid} ->
-			Pid ! Orders,
+			Pid ! {orders, Orders},
 			order_manager(Orders)
 	end.
 
@@ -34,10 +37,6 @@ add_order(Orders, NewOrder) ->
 		true -> Orders;
 		false -> Orders ++ [NewOrder]
 	end.
-
-remove_order([], Order) ->
-	io:format("Orders are already empty, can't remove ~p~n", [Order]),
-	[];
 
 remove_order(Orders, Order) ->
 	case lists:member(Order, Orders) of

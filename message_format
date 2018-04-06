@@ -4,19 +4,20 @@ Worldview
 includes
 	state						{init, moving, idle, doors_open, emergency}
 	last_floor					{1, 2, 3, 4}
-	dir							{UP, DOWN, STOP}
+	dir							{up, down, stop}
 	ID 							{_}
 	local_orders 				[{1, 2, 3, 4}]
 	#%//(destination)//
 format
 	tuple
-==> {state, LastFloor, LocalOrders, dir, ID}
+<==> {state, LastFloor, LocalOrders, dir, ID}
 
 
 Hall Order
 includes
 	floor 						{1, 2, 3, 4}
-	dir							{UP, DOWN}
+	dir							{up, down, cab}
 	ID 							{_}
 format
 	tuple
+<==> {Floor, dir}
