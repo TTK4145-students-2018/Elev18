@@ -12,16 +12,19 @@
 % Distribute worldview
 % Distribute orders
 
+start() ->
+	net_init().
+
 net_init() ->
 	os:cmd("epmd -daemon"),
 
 	{ok, LongIPlist} = inet:getif(), 							% inet:getif() gives a list of tuples of IPs
 	IPlist = tuple_to_list(element(1, hd(LongIPlist))), 							% Header of IPlist is local IP adress 
-
 	NodeName = list_to_atom("elevator@" ++ format_IP(IPlist)), 	% generates a unique nodename
 
     [ID|_T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
     order_manager:set_ID(ID),
+    worldview ! {id, ID},
 
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
  	erlang:set_cookie(node(), 'glue'),

@@ -31,13 +31,14 @@ order_manager(Orders) ->
 			order_manager(Orders);
 		{request_new_order} ->
 			case get_first(Orders) of
-				0 -> fsm ! {no_orders};
+				-1 -> fsm ! {no_orders};
 				_ -> fsm ! {ev_new_order}
 			end
-	end.
+	end,
+	order_manager(Orders).
 
 get_first([]) ->
-	0;
+	-1;
 
 get_first([H|T]) ->
 	H.

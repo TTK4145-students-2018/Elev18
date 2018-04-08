@@ -53,7 +53,7 @@ button_poller(Floor, ButtonType) ->
 			button_poller(Floor + 1, ButtonType);
 		1 ->
 			io:format("Button pressed: ~p~n", [Floor]),
-			%order_manager ! {add, Floor},
+			order_manager ! {add, Floor},
 			timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType)
 	end.

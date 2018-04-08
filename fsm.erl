@@ -18,10 +18,10 @@
 % access elements with: element(x, WorldView)
 % ex. element(1, WorldView) returns ID
 
-start(ID) ->
-	spawn(fun() -> st_init(ID) end).
+start() ->
+	st_init().
 
-st_init(ID) ->
+st_init() ->
 	io:format("fsm: initializing ~n"),
 	driver:set_motor_direction(driver, down),
 	receive 

@@ -8,7 +8,8 @@
 %orders from order_manager
 %direction from fsm
 
-start(ID) ->
+start() ->
+	receive {id, ID} -> ok end,
 	WorldView = {ID, idle, 0, [], stop},
 	world(WorldView).
 
