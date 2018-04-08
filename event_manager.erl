@@ -25,9 +25,9 @@ floor_sensor_poller() ->
 			%timer:sleep(?DELAY),
 			floor_sensor_poller();
 		_ ->
-			%fsm ! {ev_floor_reached, SensorState},
+			fsm ! {ev_floor_reached, SensorState},
 			driver:set_floor_indicator(driver, SensorState),
-			io:format("SensorState: ~p~n", [SensorState]),
+			%io:format("SensorState: ~p~n", [SensorState]),
 			timer:sleep(?DELAY),
 			floor_sensor_poller()
 	end.
@@ -52,7 +52,7 @@ button_poller(Floor, ButtonType) ->
 			%timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType);
 		1 ->
-			io:format("Button pressed: ~p~n", [Floor]),
+			%io:format("Button pressed: ~p~n", [Floor]),
 			order_manager ! {add, Floor},
 			timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType)

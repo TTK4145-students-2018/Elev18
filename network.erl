@@ -1,5 +1,5 @@
 -module(network).
--export([net_init/0]).
+-export([start/0]).
 
 
 % Network module uses distibuted Erlang (node cluster)
@@ -23,13 +23,12 @@ net_init() ->
 	NodeName = list_to_atom("elevator@" ++ format_IP(IPlist)), 	% generates a unique nodename
 
     [ID|_T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
-    order_manager:set_ID(ID),
     worldview ! {id, ID},
 
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
  	erlang:set_cookie(node(), 'glue'),
 
-	Hosts = net_adm:host_file(),
+	Hosts = net_adm:host_file().
 	
 
 

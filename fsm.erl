@@ -1,5 +1,5 @@
 -module(fsm).
--export([start/1]).
+-export([start/0]).
 
 % the finite state machine of our system
 % is to have control over the internal
@@ -25,18 +25,18 @@ st_init() ->
 	io:format("fsm: initializing ~n"),
 	driver:set_motor_direction(driver, down),
 	receive 
-		{floor_reached, 0} ->
+		{ev_floor_reached, 0} ->
 			io:format("fsm: elevator initialized, behold my initial glory ~n"),
 			driver:set_motor_direction(driver, stop),
 			%st_idle();
 			st_idle();
 		Other ->
 			io:format("fsm_init: received garbage: ~p~n", [Other]),
-			st_init(ID)
+			st_init()
 
 	after 10000 ->
 		io:format("fsm: init timed out, trying again ~n"),
-		st_init(ID)
+		st_init()
 	end.
 
 
