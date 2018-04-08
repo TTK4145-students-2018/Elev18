@@ -64,16 +64,17 @@ st_moving() ->
 	worldview ! {direction, get_direction()},
 	worldview ! {request, fsm},
 	receive {WorldView} -> ok end,
+	[Dest|Rest] = element(4, WorldView),
 	receive 
 		{ev_floor_reached, Floor} ->
 			worldview ! {floor, Floor},
-			case element(4, WorldView) =:= Floor of
+			case Dest =:= Floor of
 				true ->
 					io:format("fsm: destination reached ~n"),
 					driver:set_motor_direction(driver, stop),
 					worldview ! {direction, stop},
 					order_manager ! {remove, Floor},
-					st_doors_open(),
+					st_doors_open()
 			end;
 
 		{ev_emergency_stop} ->
