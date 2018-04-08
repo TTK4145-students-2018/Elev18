@@ -11,13 +11,16 @@ order_manager(Orders) ->
 			io:format("order_manager: adding floor: ~p~n", [Floor]),
 			NewOrders = add_order(Orders, Floor),
 			fsm ! {ev_new_order},
+			worldview ! {orders, NewOrders},
 			order_manager(NewOrders);
 		{remove, Floor} ->
 			io:format("order_manager: removing floor: ~p~n", [Floor]),
 			NewOrders = remove_order(Orders, Floor),
+			worldview ! {orders, NewOrders},
 			order_manager(NewOrders);
 		{clear} ->
 			io:format("order_manager: clearing orders ~n"),
+			worldview ! {orders, []},
 			order_manager([]);
 		{get_first, Pid} ->
 			Pid ! get_first(Orders),

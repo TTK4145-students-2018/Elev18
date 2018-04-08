@@ -25,12 +25,11 @@ st_init(ID) ->
 	io:format("fsm: initializing ~n"),
 	driver:set_motor_direction(driver, down),
 	receive 
-		{ev_ground_floor_reached} ->
+		{floor_reached, 0} ->
 			io:format("fsm: elevator initialized, behold my initial glory ~n"),
 			driver:set_motor_direction(driver, stop),
-			%WorldView = {ID, idle, 1, [], stop},
+			%st_idle();
 			st_idle();
-			%st_idle(WorldView);
 		Other ->
 			io:format("fsm_init: received garbage: ~p~n", [Other]),
 			st_init(ID)
@@ -43,6 +42,7 @@ st_init(ID) ->
 
 st_idle() ->
 	io:format("fsm: elevator idle ~n"),
+	worldview ! {state, idle},
 	order_manager ! {request_new_order},
 	receive 
 		{ev_new_order} ->
@@ -59,17 +59,22 @@ st_idle() ->
 
 st_moving() ->
 	io:format("fsm: moving ~n"),
-	driver:set_motor_direction(driver, get_direction(driver)),
+	worldview ! {state, moving},
+	driver:set_motor_direction(driver, get_direction()),
+	worldview ! {direction, get_direction()},
+	worldview ! {request, fsm},
+	receive {WorldView} -> ok end,
 	receive 
-		{ev_floor_passed, Floor} ->
-			driver:set_floor_indicator(driver, Floor);
-
-		{ev_destination_reached, Floor} ->
-			io:format("fsm: destination reached ~n"),
-			driver:set_floor_indicator(driver, Floor),
-			driver:set_motor_direction(driver, stop),
-			order_manager ! {remove, Floor},
-			st_doors_open();
+		{ev_floor_reached, Floor} ->
+			worldview ! {floor, Floor},
+			case element(4, WorldView) =:= Floor of
+				true ->
+					io:format("fsm: destination reached ~n"),
+					driver:set_motor_direction(driver, stop),
+					worldview ! {direction, stop},
+					order_manager ! {remove, Floor},
+					st_doors_open(),
+			end;
 
 		{ev_emergency_stop} ->
 			st_emergency();
@@ -77,11 +82,11 @@ st_moving() ->
 		Other ->
 			io:format("fsm_moving: received garbage: ~p~n", [Other]),
 			st_moving()
-
 	end.
 
 st_doors_open() ->
 	io:format("doors opened ~n"),
+	worldview ! {state, doors_open},
 	driver:set_door_open_light(driver, on),
 	receive
 	after 2000 ->
@@ -97,6 +102,7 @@ st_doors_open() ->
 
 st_emergency() ->
 	io:format("fsm: emergency state activated ~n"),
+	worldview ! {state, emergency},
 	driver:set_motor_direction(driver, stop),
 	driver:set_stop_button_light(driver, on),
 	order_manager ! {clear},
@@ -113,8 +119,8 @@ st_emergency() ->
 	end.
 
 
-get_direction(driver) -> 
-    driver ! {direction, request, self()},
+get_direction() -> 
+    order_manager ! {direction, request, self()},
     receive
 		{direction, response, Direction} ->
 	    	Direction
