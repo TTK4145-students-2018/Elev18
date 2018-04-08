@@ -10,6 +10,7 @@ order_manager(Orders) ->
 		{add, Floor} ->
 			io:format("order_manager: adding floor: ~p~n", [Floor]),
 			NewOrders = add_order(Orders, Floor),
+			fsm ! {ev_new_order},
 			order_manager(NewOrders);
 		{remove, Floor} ->
 			io:format("order_manager: removing floor: ~p~n", [Floor]),
@@ -23,8 +24,16 @@ order_manager(Orders) ->
 			order_manager(Orders);
 		{get_all, Pid} ->
 			Pid ! {orders, Orders},
-			order_manager(Orders)
+			order_manager(Orders);
+		{request_new_order} ->
+			case get_first(Orders) of
+				0 -> fsm ! {no_orders};
+				_ -> fsm ! {ev_new_order}
+			end.
 	end.
+
+get_first([]) ->
+	0;
 
 get_first([H|T]) ->
 	H.
@@ -43,8 +52,3 @@ remove_order(Orders, Order) ->
 		true -> Orders -- [Order];
 		false -> Orders
 	end.
-
-
-% Unsure where to put this, but if worldview is stored here then maybe this is the place
-set_ID(NewID) ->
-	ID = NewID.

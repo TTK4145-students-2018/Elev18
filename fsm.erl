@@ -25,11 +25,12 @@ st_init(ID) ->
 	io:format("fsm: initializing ~n"),
 	driver:set_motor_direction(driver, down),
 	receive 
-		ev_ground_floor_reached ->
+		{ev_ground_floor_reached} ->
 			io:format("fsm: elevator initialized, behold my initial glory ~n"),
 			driver:set_motor_direction(driver, stop),
-			WorldView = {ID, idle, 1, [], stop},
-			st_idle(WorldView);
+			%WorldView = {ID, idle, 1, [], stop},
+			st_idle();
+			%st_idle(WorldView);
 		Other ->
 			io:format("fsm_init: received garbage: ~p~n", [Other]),
 			st_init(ID)
@@ -40,13 +41,14 @@ st_init(ID) ->
 	end.
 
 
-st_idle(WorldView) ->
+st_idle() ->
 	io:format("fsm: elevator idle ~n"),
+	order_manager ! {request_new_order},
 	receive 
-		ev_order_received ->
+		{ev_new_order} ->
 			st_moving();
 
-		ev_emergency_stop ->
+		{ev_emergency_stop} ->
 			st_emergency();
 
 		Other ->
@@ -69,7 +71,7 @@ st_moving() ->
 			order_manager ! {remove, Floor},
 			st_doors_open();
 
-		ev_emergency_stop ->
+		{ev_emergency_stop} ->
 			st_emergency();
 
 		Other ->
@@ -81,12 +83,16 @@ st_moving() ->
 st_doors_open() ->
 	io:format("doors opened ~n"),
 	driver:set_door_open_light(driver, on),
-	
 	receive
-	after
-		2000 ->
-			driver:set_door_open_light(driver, off),
-			st_moving()
+	after 2000 ->
+		driver:set_door_open_light(driver, off),
+		order_manager ! {request_new_order},
+		receive
+			{ev_new_order} ->
+				st_moving();
+			{no_orders} ->
+				st_idle()
+		end
 	end.
 
 st_emergency() ->
@@ -95,10 +101,10 @@ st_emergency() ->
 	driver:set_stop_button_light(driver, on),
 	order_manager ! {clear},
 	receive
-		ev_order_received ->
+		{ev_new_order} ->
 			st_moving();
 
-		ev_emergency_stop ->
+		{ev_emergency_stop} ->
 			st_emergency();
 
 		Other ->
@@ -113,3 +119,7 @@ get_direction(driver) ->
 		{direction, response, Direction} ->
 	    	Direction
     end.
+
+% Unsure where to put this, but if worldview is stored here then maybe this is the place
+%set_ID(NewID) ->
+%	ID = NewID.
