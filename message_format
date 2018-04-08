@@ -13,11 +13,11 @@ format
 <==> {state, LastFloor, LocalOrders, dir, ID}
 
 
-Hall Order
+Order button pressed
 includes
 	floor 						{1, 2, 3, 4}
-	dir							{up, down, cab}
+	buttontype					{up, down, cab}
 	ID 							{_}
 format
 	tuple
-<==> {Floor, dir}
+<==> {Floor, ButtonType}

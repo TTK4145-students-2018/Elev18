@@ -2,7 +2,8 @@
 -compile(export_all).
 
 start() ->
-	spawn(fun() -> order_manager([]) end).
+	%spawn(fun() -> order_manager([]) end).
+	order_manager([]).
 
 order_manager(Orders) ->
 	io:format("order_manager: current orders: ~p~n", [Orders]),

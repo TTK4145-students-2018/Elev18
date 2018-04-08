@@ -2,6 +2,8 @@
 
 -compile(export_all).
 
+-define(DELAY, 100).
+
 %-export([start/0]).
 
 % poller of the system, listening for button presses
@@ -10,25 +12,36 @@
 % TODO:
 
 start() ->
-	%{ok, DriverPid} = driver:start(),
-    button_poller(0, cab).
-    %floor_sensor_poller().
-
+    spawn(fun() -> floor_sensor_poller() end),
+	spawn(fun() -> button_poller(0, cab) end),
+	spawn(fun() -> button_poller(1, hall_down) end),
+	spawn(fun() -> button_poller(0, hall_up) end).
 
 floor_sensor_poller() ->
-	io:format("Hello from sensor poller ~n"),
-	SensorState = driver:get_floor_sensor_state(self()),
-	io:format("SensorState: ~p~n", [SensorState]),
-	receive
-		{reply, State, Socket} ->
-			io:format("State: ~p~n", [State]),
-			io:format("Socket: ~p~n", [Socket]),
+	SensorState = driver:get_floor_sensor_state(driver),
+	%io:format("SensorState: ~p~n", [SensorState]),
+	case SensorState of
+		between_floors ->
+			%timer:sleep(?DELAY),
+			floor_sensor_poller();
+		_ ->
+			%fsm ! {ev_floor_reached, SensorState},
+			driver:set_floor_indicator(driver, SensorState),
+			io:format("SensorState: ~p~n", [SensorState]),
+			timer:sleep(?DELAY),
 			floor_sensor_poller()
 	end.
 
 
-button_poller(4, ButtonType) ->
-	button_poller(0, ButtonType);
+
+button_poller(4, cab) ->
+	button_poller(0, cab);
+
+button_poller(4, hall_down) ->
+	button_poller(1, hall_down);
+
+button_poller(3, hall_up) ->
+	button_poller(0, hall_up);
 
 button_poller(Floor, ButtonType) ->
 	%io:format("halla fra button poller ~n"),
@@ -36,29 +49,16 @@ button_poller(Floor, ButtonType) ->
 	case ButtonState of
 		0 ->
 			%io:format("Nope ~p~n", [Floor]),
+			%timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType);
 		1 ->
 			io:format("Button pressed: ~p~n", [Floor]),
 			%order_manager ! {add, Floor},
+			timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType)
 	end.
-
-button_poller(DriverPid, Floor, ButtonType) when Floor >= 0, Floor =< 3 ->
-	ButtonState = driver:get_order_button_state(DriverPid, Floor, ButtonType),
-	case ButtonState of
-		0 ->
-			io:format("Nope ~p~n", [Floor]),
-			button_poller(DriverPid, Floor + 1, ButtonType);
-		1 ->
-			%order_manager ! {add, Floor},
-			io:format("Yes ~p~n", [Floor]),
-			button_poller(DriverPid, Floor + 1, ButtonType)
-	end.
-
 
 
 event_handler() ->
 	1.
 
-ev_button_pressed() ->
-	1.
