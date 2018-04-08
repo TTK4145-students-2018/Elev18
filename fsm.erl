@@ -129,3 +129,4 @@ get_direction() ->
 % Unsure where to put this, but if worldview is stored here then maybe this is the place
 %set_ID(NewID) ->
 %	ID = NewID.
+

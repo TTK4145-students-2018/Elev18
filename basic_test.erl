@@ -1,58 +1,45 @@
 -module(basic_test).
--export([start/0]).
+-export([init_drive/0]).
 
 -define(DELAY, 100).
 
 % This should make the elevator move to the first floor,
 % then move between the first and fourth floor
 
-start() ->
-	{ok, DriverPid} = driver:start(),
-	init_drive(DriverPid).
-
-init_drive(DriverPid) ->
-	FloorState = driver:get_floor_sensor_state(DriverPid),
+init_drive() ->
+	FloorState = driver:get_floor_sensor_state(driver),
 	case FloorState of
 		0 ->
 			io:format("Initialized!"),
-			drive_up(DriverPid);
+			drive_up();
 		_ ->
-			init_drive(DriverPid, down)
-	end.
-
-init_drive(DriverPid, Direction) ->
-	driver:set_motor_direction(DriverPid, Direction),
-	timer:sleep(?DELAY),
-	FloorState = driver:get_floor_sensor_state(DriverPid),
-	case FloorState of
-			0 ->
-				io:format("Initialized!"),
-				drive_up(DriverPid);
-			_ ->
-				init_drive(DriverPid)
+			driver:set_motor_direction(driver, down),
+			timer:sleep(?DELAY),
+			init_drive()
 	end.
 
 
-drive_up(DriverPid) ->
-	driver:set_motor_direction(DriverPid, up),
+
+drive_up() ->
+	driver:set_motor_direction(driver, up),
 	timer:sleep(?DELAY),
-	FloorState = driver:get_floor_sensor_state(DriverPid),
+	FloorState = driver:get_floor_sensor_state(driver),
 	case FloorState of
 		3 ->
-			drive_down(DriverPid);
+			drive_down();
 		_ ->
-			drive_up(DriverPid)
+			drive_up()
 	end.
 
-drive_down(DriverPid) ->
-	driver:set_motor_direction(DriverPid, down),
+drive_down() ->
+	driver:set_motor_direction(driver, down),
 	timer:sleep(?DELAY),
-	FloorState = driver:get_floor_sensor_state(DriverPid),
+	FloorState = driver:get_floor_sensor_state(driver),
 	case FloorState of
 		0 ->
-			drive_up(DriverPid);
+			drive_up();
 		_ ->
-			drive_down(DriverPid)
+			drive_down()
 	end.
 
 	
