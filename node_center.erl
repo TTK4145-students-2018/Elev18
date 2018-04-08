@@ -7,7 +7,7 @@
 %TODO
 
 start() ->
-	%register(fsm, fsm:start()),
+	%register(fsm, fsm:start(1)),
 	%register(order_manager, order_manager:start()),
 	{ok, DriverPid} = driver:start(),
 	register(driver, DriverPid),

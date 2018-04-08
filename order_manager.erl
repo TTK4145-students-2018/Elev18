@@ -29,7 +29,7 @@ order_manager(Orders) ->
 			case get_first(Orders) of
 				0 -> fsm ! {no_orders};
 				_ -> fsm ! {ev_new_order}
-			end.
+			end
 	end.
 
 get_first([]) ->

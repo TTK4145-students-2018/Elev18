@@ -12,22 +12,34 @@
 start() ->
 	%{ok, DriverPid} = driver:start(),
     button_poller(0, cab).
+    %floor_sensor_poller().
 
 
-sensor_poller() ->
-	1.
+floor_sensor_poller() ->
+	io:format("Hello from sensor poller ~n"),
+	SensorState = driver:get_floor_sensor_state(self()),
+	io:format("SensorState: ~p~n", [SensorState]),
+	receive
+		{reply, State, Socket} ->
+			io:format("State: ~p~n", [State]),
+			io:format("Socket: ~p~n", [Socket]),
+			floor_sensor_poller()
+	end.
 
-button_poller(Floor, ButtonType) when Floor >= 0, Floor =< 3 ->
-	io:format("halla fra button poller ~n"),
+
+button_poller(4, ButtonType) ->
+	button_poller(0, ButtonType);
+
+button_poller(Floor, ButtonType) ->
+	%io:format("halla fra button poller ~n"),
 	ButtonState = driver:get_order_button_state(driver, Floor, ButtonType),
-	io:format([ButtonState]),
 	case ButtonState of
 		0 ->
-			io:format("Nope ~p~n", [Floor]),
+			%io:format("Nope ~p~n", [Floor]),
 			button_poller(Floor + 1, ButtonType);
 		1 ->
+			io:format("Button pressed: ~p~n", [Floor]),
 			%order_manager ! {add, Floor},
-			io:format("Yes ~p~n", [Floor]),
 			button_poller(Floor + 1, ButtonType)
 	end.
 
