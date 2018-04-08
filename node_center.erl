@@ -7,7 +7,8 @@
 %TODO
 
 start() ->
-	register(fsm, fsm:start()),
-	register(order_manager, order_manager:start()),
-	register(driver, driver:start()),
-	register(event_manager, event_manager:start()).
+	%register(fsm, fsm:start()),
+	%register(order_manager, order_manager:start()),
+	{ok, DriverPid} = driver:start(),
+	register(driver, DriverPid),
+	register(event_manager, spawn(fun event_manager:start/0)).
