@@ -1,6 +1,12 @@
 -module(order_manager).
 -compile(export_all).
 
+% TODO:
+% make orders tuples instead of numbers on form:
+% {Floor, call_type}, for example {3, hall_down}.
+% Then find way of placing a new call in the correct
+% spot.
+
 start() ->
 	%spawn(fun() -> order_manager([]) end).
 	order_manager([]).

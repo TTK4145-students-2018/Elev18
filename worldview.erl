@@ -32,6 +32,22 @@ world(WorldView) ->
 			NewView = setelement(5, WorldView, Dir),
 			world(NewView);
 
-		{request, Pid} ->
-			Pid ! {WorldView}
+		{request, wv, Pid} ->
+			Pid ! {response, wv, WorldView};
+
+		{request, direction, Pid} ->
+			Pid ! {response, direction, get_direction(WorldView)}
+	end,
+	world(WorldView).
+
+get_direction(WorldView) ->
+	% NOTE: doesn't react well to being called between floors. i.e. if it
+	% has last floor registered the same as next floor, it will return down
+	% regardless of actual position relative to destination.
+	
+	LastFloor = element(3, WorldView),
+	[NextFloor|Rest] = element(4, WorldView),
+	case LastFloor < NextFloor of
+		true -> up;
+		false -> down
 	end.

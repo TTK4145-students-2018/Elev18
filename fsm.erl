@@ -60,10 +60,12 @@ st_idle() ->
 st_moving() ->
 	io:format("fsm: moving ~n"),
 	worldview ! {state, moving},
-	driver:set_motor_direction(driver, get_direction()),
-	worldview ! {direction, get_direction()},
-	worldview ! {request, fsm},
-	receive {WorldView} -> ok end,
+	worldview ! {request, direction, fsm},
+	receive {response, direction, Direction} -> ok end,
+	driver:set_motor_direction(driver, Direction),
+	worldview ! {direction, Direction},
+	worldview ! {request, wv, fsm},
+	receive {response, wv, WorldView} -> ok end,
 	[Dest|Rest] = element(4, WorldView),
 	receive 
 		{ev_floor_reached, Floor} ->
@@ -86,7 +88,7 @@ st_moving() ->
 	end.
 
 st_doors_open() ->
-	io:format("doors opened ~n"),
+	io:format("fsm: doors opened ~n"),
 	worldview ! {state, doors_open},
 	driver:set_door_open_light(driver, on),
 	receive
@@ -118,16 +120,3 @@ st_emergency() ->
 			io:format("fsm_emergency: received garbage: ~p~n", [Other]),
 			st_emergency()
 	end.
-
-
-get_direction() -> 
-    order_manager ! {direction, request, self()},
-    receive
-		{direction, response, Direction} ->
-	    	Direction
-    end.
-
-% Unsure where to put this, but if worldview is stored here then maybe this is the place
-%set_ID(NewID) ->
-%	ID = NewID.
-
