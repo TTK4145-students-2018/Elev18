@@ -14,7 +14,7 @@ start() ->
 	world(WorldView).
 
 world(WorldView) ->
-	io:format("current worldview: ~p~n", [tuple_to_list(WorldView)]),
+	io:format("current worldview: ~p~n", [WorldView]),
 	receive
 		{state, State} ->
 			NewView = setelement(2, WorldView, State),
@@ -64,7 +64,11 @@ get_direction(WorldView) ->
 	
 	LastFloor = element(3, WorldView),
 	[NextFloor|Rest] = element(4, WorldView),
-	case LastFloor < NextFloor of
-		true -> up;
-		false -> down
+	case LastFloor =:= NextFloor of
+		true -> stop;
+		false ->
+			case LastFloor < NextFloor of
+				true -> up;
+				false -> down
+			end
 	end.
