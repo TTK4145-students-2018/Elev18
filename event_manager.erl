@@ -12,24 +12,31 @@
 % TODO:
 
 start() ->
-    spawn(fun() -> floor_sensor_poller() end),
+    spawn(fun() -> floor_sensor_poller(1) end),
 	spawn(fun() -> button_poller(0, cab) end),
 	spawn(fun() -> button_poller(1, hall_down) end),
 	spawn(fun() -> button_poller(0, hall_up) end).
 
-floor_sensor_poller() ->
+floor_sensor_poller(LastState) ->
 	SensorState = driver:get_floor_sensor_state(driver),
 	%io:format("SensorState: ~p~n", [SensorState]),
 	case SensorState of
 		between_floors ->
-			%timer:sleep(?DELAY),
-			floor_sensor_poller();
+			case SensorState =:= LastState of
+				true -> 
+					floor_sensor_poller(SensorState);
+				false ->
+					worldview ! {floor, between_floors},
+					%timer:sleep(?DELAY),
+					floor_sensor_poller(SensorState)
+			end;
 		_ ->
 			fsm ! {ev_floor_reached, SensorState},
+			worldview ! {floor, SensorState},
 			driver:set_floor_indicator(driver, SensorState),
 			%io:format("SensorState: ~p~n", [SensorState]),
 			timer:sleep(?DELAY),
-			floor_sensor_poller()
+			floor_sensor_poller(SensorState)
 	end.
 
 

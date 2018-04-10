@@ -69,7 +69,7 @@ st_moving() ->
 	[Dest|Rest] = element(4, WorldView),
 	receive 
 		{ev_floor_reached, Floor} ->
-			worldview ! {floor, Floor},
+			% worldview ! {floor, Floor}, sending from EM instead
 			case Dest =:= Floor of
 				true ->
 					io:format("fsm: destination reached ~n"),
