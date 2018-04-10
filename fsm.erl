@@ -41,7 +41,7 @@ st_init() ->
 
 
 st_idle() ->
-	io:format("fsm: elevator idle ~n"),
+	% io:format("fsm: elevator idle ~n"),
 	worldview ! {state, idle},
 	order_manager ! {request_new_order},
 	receive 
@@ -50,6 +50,9 @@ st_idle() ->
 
 		{ev_emergency_stop} ->
 			st_emergency();
+
+		{no_orders} ->
+			st_idle();
 
 		Other ->
 			io:format("fsm_idle: received garbage: ~p~n", [Other]),
@@ -70,13 +73,15 @@ st_moving() ->
 	receive 
 		{ev_floor_reached, Floor} ->
 			% worldview ! {floor, Floor}, sending from EM instead
-			case Dest =:= Floor of
+			case Dest == Floor of
 				true ->
 					io:format("fsm: destination reached ~n"),
 					driver:set_motor_direction(driver, stop),
 					worldview ! {direction, stop},
 					order_manager ! {remove, Floor},
-					st_doors_open()
+					st_doors_open();
+				false ->
+					st_moving()
 			end;
 
 		{ev_emergency_stop} ->

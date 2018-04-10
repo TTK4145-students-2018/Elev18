@@ -9,7 +9,7 @@
 start() ->
 	register(fsm, spawn(fun fsm:start/0)),
 	register(order_manager, spawn(fun order_manager:start/0)),
-	{ok, DriverPid} = driver:start(),
+	{ok, DriverPid} = driver:start({127,0,0,1}, 011095),
 	register(driver, DriverPid),
 	register(event_manager, spawn(fun event_manager:start/0)),
 	register(worldview, spawn(fun worldview:start/0)),
