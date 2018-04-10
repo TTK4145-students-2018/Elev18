@@ -31,12 +31,17 @@ floor_sensor_poller(LastState) ->
 					floor_sensor_poller(SensorState)
 			end;
 		_ ->
-			fsm ! {ev_floor_reached, SensorState},
-			worldview ! {floor, SensorState},
-			driver:set_floor_indicator(driver, SensorState),
-			%io:format("SensorState: ~p~n", [SensorState]),
-			timer:sleep(?DELAY),
-			floor_sensor_poller(SensorState)
+			case SensorState =:= LastState of
+				true ->
+					floor_sensor_poller(SensorState);
+				false ->
+					fsm ! {ev_floor_reached, SensorState},
+					worldview ! {floor, SensorState},
+					driver:set_floor_indicator(driver, SensorState),
+					%io:format("SensorState: ~p~n", [SensorState]),
+					timer:sleep(?DELAY),
+					floor_sensor_poller(SensorState)
+			end
 	end.
 
 
