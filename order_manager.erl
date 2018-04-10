@@ -43,6 +43,25 @@ order_manager(Orders) ->
 	end,
 	order_manager(Orders).
 
+suitable_position([], _, Position, _) ->
+	Position;
+
+suitable_position([H|T], Order, Position, LastDirection) ->
+	OrderFloor = element(1, Order),
+	OrderDir = element(2, Order),
+	case OrderDir == LastDirection and OrderDir == hall_down and OrderFloor of
+		true -> 
+		false ->
+	end.
+
+ideal(NextFloor, OrderFloor, hall_down, LastDirection) ->
+	(LastDirection == hall_down) and (OrderFloor > NextFloor);
+
+ideal(NextFloor, OrderFloor, hall_up, LastDirection) ->
+	Normal = (LastDirection == hall_up) and (OrderFloor < NextFloor),
+	Special = (LastDirection == hall_down and )
+
+
 get_first([]) ->
 	-1;
 
