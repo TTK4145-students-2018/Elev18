@@ -20,6 +20,23 @@ world(WorldView) ->
 			NewView = setelement(2, WorldView, State),
 			world(NewView);
 
+		{floor, between_floors} ->
+			case is_float(element(3, WorldView)) of
+				true ->
+					world(WorldView);
+				false ->
+					case element(5, WorldView) of
+						stop ->
+							world(WorldView);
+						up ->
+							NewView = setelement(3, WorldView, element(3, WorldView) + 0.5),
+							world(NewView);
+						down ->
+							NewView = setelement(3, WorldView, element(3, WorldView) - 0.5),
+							world(NewView)
+					end
+			end;
+
 		{floor, LastFloor} ->
 			NewView = setelement(3, WorldView, LastFloor),
 			world(NewView);
