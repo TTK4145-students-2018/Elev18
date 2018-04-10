@@ -13,9 +13,10 @@
 % Distribute orders
 
 start() ->
-	net_init().
+	init().
 
-net_init() ->
+
+init() ->
 	os:cmd("epmd -daemon"),
 
 	{ok, LongIPlist} = inet:getif(), 							% inet:getif() gives a list of tuples of IPs
@@ -26,10 +27,33 @@ net_init() ->
     worldview ! {id, ID},
 
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
- 	erlang:set_cookie(node(), 'glue'),
+ 	erlang:set_cookie(node(), 'Elev18'),
+ 	register(shell, self()),
 
-	Hosts = net_adm:host_file().
+	Hosts = net_adm:host_file(),
+	connect_nodes(Hosts),
+
+
+
+connect_nodes(Hosts) ->
+	[IP|NewHosts] = Hosts,
+	NodeName = "elevator@" ++ IP,
+
+	net_kernel:connect_node(NodeName),
+
+	connect_nodes(NewHosts).
+
+network() ->
 	
+	receive {id, ID, from, OtherShell} ->
+		register(list_to_atom("worldview" ++ ID )
+
+make_node_list() ->
+	
+
+update_worldviews() ->
+	receive {, Worldview, OtherShell, ID} ->
+
 
 
 
