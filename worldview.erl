@@ -58,10 +58,6 @@ world(WorldView) ->
 	world(WorldView).
 
 get_direction(WorldView) ->
-	% NOTE: doesn't react well to being called between floors. i.e. if it
-	% has last floor registered the same as next floor, it will return down
-	% regardless of actual position relative to destination.
-	
 	LastFloor = element(3, WorldView),
 	[NextFloor|Rest] = element(4, WorldView),
 	case LastFloor =:= NextFloor of

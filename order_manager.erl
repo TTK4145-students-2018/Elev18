@@ -63,3 +63,8 @@ remove_order(Orders, Order) ->
 		true -> Orders -- [Order];
 		false -> Orders
 	end.
+
+%find_position(Orders, Order) ->
+	% returns suitable position for Order to be placed
+	% within Orders.
+	%RECURSION

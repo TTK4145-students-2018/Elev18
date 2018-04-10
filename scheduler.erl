@@ -1,5 +1,5 @@
 -module(scheduler).
--export([get_cost/2]).
+-compile(export_all).
 
 % Calculates cost, and determines whether it is optimal 
 % for this elevator to perform a task instead of one of the
@@ -9,20 +9,54 @@
 % decisions based on correct information about the entire system. 
 
 % TODO:
-% use worldview tuple
 % Calculate cost of moving a number of floors
 % Calculate cost of changing direction
 % 
 
-get_cost(Orders, NewOrder) ->
-	case lists:member(NewOrder, Orders) of
+scheduler(WorldViews, Order) ->
+	scheduler(WorldViews, Order, 100).
+
+scheduler([], _, _) ->
+	-1;
+
+scheduler(WorldViews, Order, Cost) ->
+	% returns the ID of the node that is considered to
+	% be the best fit for the order.
+	[WorldView|RestViews] = WorldViews,
+	CurrentCost = get_cost(WorldView, Order),
+	case CurrentCost < Cost of
+		true -> 
+			RestID = scheduler(RestViews, Order, CurrentCost), 
+			case RestID > -1 of
+				true -> RestID;
+				false -> element(1, WorldView)
+			end;
+		false -> scheduler(RestViews, Order, Cost)
+	end.
+
+get_cost(WorldView, Order) ->
+	Num = number_of_orders(WorldView),
+	Dist = get_distance(WorldView, Order),
+	Mem = member(WorldView, Order),
+	Mem * (Num/2 + Dist). %/2 is kinda arbitrary and very tunable
+
+member(WorldView, Order) ->
+	%returns 0 if Order already exists in WorldView
+	Orders = element(4, WorldView),
+	case lists:member(Order, Orders) of
 		true -> 0;
 		false -> 1
 	end.
 
-get_distance([Orders], Order) ->
-	end.
-	% returns the number of floors the new order
-	% is away from the state of the elevator (considering
-	% current floor, and direction)
-	% {Floor, Direction} = driver:get_state(),
+number_of_orders(WorldView) ->
+	Orders = element(4, WorldView),
+	length(Orders).
+
+get_distance(WorldView, Order) ->
+	% returns distance between current distance and order
+	% floor. Currently regardless of the direction the elevator
+	% must travel before taking it.
+	LastFloor = element(3, WorldView),
+	OrderFloor = element(1, Order),
+	abs(LastFloor - OrderFloor).
+
