@@ -12,7 +12,6 @@
 % Calculate cost of moving a number of floors
 % Calculate cost of changing direction
 % 
-
 scheduler(WorldViews, Order) ->
 	scheduler(WorldViews, Order, 100).
 
@@ -37,8 +36,9 @@ scheduler(WorldViews, Order, Cost) ->
 get_cost(WorldView, Order) ->
 	Num = number_of_orders(WorldView),
 	Dist = get_distance(WorldView, Order),
+	Place = order_placement(WorldView, Order),
 	Mem = member(WorldView, Order),
-	Mem * (Num/2 + Dist). %/2 is kinda arbitrary and very tunable
+	Mem * (Num/2 + Place + Dist). %/2 is kinda arbitrary and very tunable
 
 member(WorldView, Order) ->
 	%returns 0 if Order already exists in WorldView
@@ -59,4 +59,14 @@ get_distance(WorldView, Order) ->
 	LastFloor = element(3, WorldView),
 	OrderFloor = element(1, Order),
 	abs(LastFloor - OrderFloor).
+
+order_placement(WorldView, Order) ->
+	Orders = element(1, WorldView),
+	[First|_] = Orders,
+	case order_manager:ideal_first(First, WorldView, element(1, Order), element(2, Order)) of
+		true -> 1;
+		false -> order_manager:find_position(Orders, Order, 2)
+	end.
+
+
 

@@ -1,5 +1,5 @@
 #Compile script taken from Sivertba's ErlangHeis2016
-erlc *.erl;
+erlc -v *.erl;
 mkdir ebin;
 mv *.beam ebin/;
 cd ebin/;
