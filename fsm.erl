@@ -65,15 +65,15 @@ st_moving() ->
 	worldview ! {request, direction, fsm},
 	receive {response, direction, Direction} -> ok end,
 	driver:set_motor_direction(driver, Direction),
-	case Direction == stop of
-		true -> st_idle();
-		false -> ok
-	end,
 	worldview ! {direction, Direction},
 	worldview ! {request, wv, fsm},
 	receive {response, wv, WorldView} -> ok end,
-	[Dest|Rest] = element(4, WorldView),
+	[Dest|_] = element(4, WorldView),
 	DestFloor = element(1, Dest),
+	case Direction == stop of
+		true -> fsm ! {ev_floor_reached, element(1, Dest)};
+		false -> ok
+	end,
 	receive 
 		{ev_floor_reached, Floor} ->
 			% worldview ! {floor, Floor}, sending from EM instead
@@ -103,14 +103,14 @@ st_doors_open() ->
 	receive
 	after 2000 ->
 		driver:set_door_open_light(driver, off),
-		st_moving()
-		%order_manager ! {request_new_order},
-		%receive
-		%	{ev_new_order} ->
-		%		st_moving();
-		%	{no_orders} ->
-		%		st_idle()
-		%end
+		%st_moving()
+		order_manager ! {request_new_order},
+		receive
+			{ev_new_order} ->
+				st_moving();
+			{no_orders} ->
+				st_idle()
+		end
 	end.
 
 st_emergency() ->
