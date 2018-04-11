@@ -12,7 +12,6 @@ start() ->
 	order_manager([]).
 
 order_manager(Orders) ->
-	io:format("order_manager: current orders: ~p~n", [Orders]),
 	receive 
 		{add, Order} ->
 			io:format("order_manager: adding order: ~p~n", [Order]),
@@ -21,11 +20,13 @@ order_manager(Orders) ->
 			NewOrders = add_order(Orders, Order, WorldView),
 			fsm ! {ev_new_order},
 			worldview ! {orders, NewOrders},
+			io:format("order_manager: new orders: ~p~n", [NewOrders]),
 			order_manager(NewOrders);
 		{remove, Floor} ->
 			io:format("order_manager: removing order: ~p~n", [Floor]),
-			NewOrders = remove_order(Orders, Order),
+			NewOrders = remove_order(Orders, Floor),
 			worldview ! {orders, NewOrders},
+			io:format("order_manager: new orders: ~p~n", [NewOrders]),
 			order_manager(NewOrders);
 		{clear} ->
 			io:format("order_manager: clearing orders ~n"),
@@ -64,10 +65,14 @@ add_order(Orders, NewOrder, WorldView) ->
 			end				
 	end.
 
-remove_order(Orders, Order) ->
-	case lists:member(Order, Orders) of
-		true -> Orders -- [Order];
-		false -> Orders
+remove_order(Orders, Floor) ->
+	[First|_] = Orders,
+	case (element(1, First) == Floor) of
+		true ->
+			NewOrders = lists:keydelete(2, 1, Orders),
+			remove_order(NewOrders, Floor);
+		false ->
+			Orders
 	end.
 
 find_position([H|[]], _, Position) ->
