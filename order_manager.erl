@@ -24,7 +24,7 @@ order_manager(Orders) ->
 			order_manager(NewOrders);
 		{remove, Floor} ->
 			io:format("order_manager: removing order: ~p~n", [Floor]),
-			NewOrders = remove_order(Orders, Order),
+			NewOrders = remove_order(Orders, Floor),
 			worldview ! {orders, NewOrders},
 			order_manager(NewOrders);
 		{clear} ->
@@ -64,11 +64,29 @@ add_order(Orders, NewOrder, WorldView) ->
 			end				
 	end.
 
-remove_order(Orders, Order) ->
-	case lists:member(Order, Orders) of
-		true -> Orders -- [Order];
-		false -> Orders
-	end.
+remove_order(Orders, Floor) ->
+	OrderUp = {Floor, hall_up},
+	OrderDown = {Floor, hall_down},
+	OrderCab = {Floor, cab},
+	case lists:member(OrderUp, Orders) of
+		true -> 
+			NewUp = Orders -- [OrderUp],
+			remove_order(NewUp, Floor);
+		false -> ok
+	end,
+	case lists:member(OrderDown, Orders) of
+		true -> 
+			NewDown = Orders -- [OrderDown],
+			remove_order(NewDown, Floor);
+		false -> ok
+	end,
+	case lists:member(OrderCab, Orders) of
+		true -> 
+			NewCab = Orders -- [OrderCab],
+			remove_order(NewCab, Floor);
+		false -> ok
+	end,
+	Orders.
 
 find_position([H|[]], _, Position) ->
 	Position;
