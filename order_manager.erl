@@ -14,15 +14,17 @@ start() ->
 order_manager(Orders) ->
 	io:format("order_manager: current orders: ~p~n", [Orders]),
 	receive 
-		{add, Floor} ->
-			io:format("order_manager: adding floor: ~p~n", [Floor]),
-			NewOrders = add_order(Orders, Floor),
+		{add, Order} ->
+			io:format("order_manager: adding order: ~p~n", [Order]),
+			worldview ! {request, wv, fsm},
+			receive {response, wv, WorldView} -> ok end,
+			NewOrders = add_order(Orders, Order, WorldView),
 			fsm ! {ev_new_order},
 			worldview ! {orders, NewOrders},
 			order_manager(NewOrders);
-		{remove, Floor} ->
-			io:format("order_manager: removing floor: ~p~n", [Floor]),
-			NewOrders = remove_order(Orders, Floor),
+		{remove, Order} ->
+			io:format("order_manager: removing order: ~p~n", [Order]),
+			NewOrders = remove_order(Orders, Order),
 			worldview ! {orders, NewOrders},
 			order_manager(NewOrders);
 		{clear} ->
@@ -43,38 +45,23 @@ order_manager(Orders) ->
 	end,
 	order_manager(Orders).
 
-suitable_position([], _, Position, _) ->
-	Position;
-
-suitable_position([H|T], Order, Position, LastDirection) ->
-	OrderFloor = element(1, Order),
-	OrderDir = element(2, Order),
-	case OrderDir == LastDirection and OrderDir == hall_down and OrderFloor of
-		true -> 
-		false ->
-	end.
-
-ideal(NextFloor, OrderFloor, hall_down, LastDirection) ->
-	(LastDirection == hall_down) and (OrderFloor > NextFloor);
-
-ideal(NextFloor, OrderFloor, hall_up, LastDirection) ->
-	Normal = (LastDirection == hall_up) and (OrderFloor < NextFloor),
-	Special = (LastDirection == hall_down and )
-
-
-get_first([]) ->
-	-1;
-
-get_first([H|T]) ->
-	H.
-
-add_order([], NewOrder) ->
+add_order([], NewOrder, _) ->
 	[NewOrder];
 
-add_order(Orders, NewOrder) ->
+add_order(Orders, NewOrder, WorldView) ->
+	[First|_] = Orders,
+	OrderFloor = element(1, NewOrder),
+	OrderDir = element(2, NewOrder),
 	case lists:member(NewOrder, Orders) of
-		true -> Orders;
-		false -> Orders ++ [NewOrder]
+		true -> 
+			Orders;
+		false -> 
+			case ideal_first(First, WorldView, OrderFloor, OrderDir) of
+				true ->
+					NewOrders = hf:list_insert(Orders, NewOrder, 1);
+				false ->
+					NewOrders = hf:list_insert(Orders, NewOrder, find_position(Orders, NewOrder, 2))
+			end				
 	end.
 
 remove_order(Orders, Order) ->
@@ -83,7 +70,62 @@ remove_order(Orders, Order) ->
 		false -> Orders
 	end.
 
-%find_position(Orders, Order) ->
-	% returns suitable position for Order to be placed
-	% within Orders.
-	%RECURSION
+find_position([H|[]], _, Position) ->
+	Position;
+
+find_position([PrevOrder|NextOrders], Order, Position) ->
+	OrderFloor = element(1, Order),
+	OrderDir = element(2, Order),
+	[NextOrder|_] = NextOrders,
+	case ideal(PrevOrder, NextOrder, OrderFloor, OrderDir) of
+		true -> Position;
+		false -> find_position(NextOrders, Order, Position + 1)
+	end.	
+
+ideal_first(NextOrder, WorldView, OrderFloor, OrderDir) ->
+	% returns true if the order can be placed at the front of list, i.e. it
+	% can do the order before the initial first order
+	Position = element(3, WorldView),
+	NextFloor = element(1, NextOrder),
+	Between = ((OrderFloor > Position) and (OrderFloor < NextFloor)) or 
+	((OrderFloor < Position) and (OrderFloor > NextFloor)),
+	case Position < NextFloor of
+		true -> Dir = hall_up;
+		false -> Dir = hall_down
+	end,
+	Between and (OrderDir == Dir).
+
+ideal(PrevOrder, NextOrder, OrderFloor, hall_down) ->
+	% returns true if position between prevorder and nextorder is gucci
+	LastFloor = element(1, PrevOrder),
+	LastDir = element(2, PrevOrder),
+	NextFloor = element(1, NextOrder),
+	NextDir = element(2, NextOrder),
+	Normal = (LastDir == hall_down) and (OrderFloor >= NextFloor) and (OrderFloor =< LastFloor),
+	Special = (LastDir == hall_up) and (NextDir == hall_down) and (OrderFloor >= NextFloor),
+	Cab = (LastFloor > NextFloor) and (OrderFloor >= LastFloor) and (OrderFloor =< NextFloor),
+	Cab or Normal or Special;
+
+ideal(PrevOrder, NextOrder, OrderFloor, hall_up) ->
+	LastFloor = element(1, PrevOrder),
+	LastDir = element(2, PrevOrder),
+	NextFloor = element(1, NextOrder),
+	NextDir = element(2, NextOrder),
+	Normal = (LastDir == hall_up) and (OrderFloor =< NextFloor) and (OrderFloor >= LastFloor),
+	Special = (LastDir == hall_down) and (NextDir == hall_up) and (OrderFloor =< NextFloor),
+	Cab = (LastFloor < NextFloor) and (OrderFloor =< LastFloor) and (OrderFloor >= NextFloor),
+	Cab or Normal or Special;
+
+ideal(PrevOrder, NextOrder, OrderFloor, cab) ->
+	LastFloor = element(1, PrevOrder),
+	NextFloor = element(1, NextOrder),
+	Equal = (OrderFloor == NextFloor),
+	Up = (LastFloor < NextOrder) and (OrderFloor >= LastFloor) and (OrderFloor =< NextFloor),
+	Down = (LastFloor > NextOrder) and (OrderFloor =< LastFloor) and (OrderFloor >= NextFloor),
+	Up or Down or Equal.
+
+get_first([]) ->
+	-1;
+
+get_first([H|_]) ->
+	H.
