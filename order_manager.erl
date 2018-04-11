@@ -65,28 +65,14 @@ add_order(Orders, NewOrder, WorldView) ->
 	end.
 
 remove_order(Orders, Floor) ->
-	OrderUp = {Floor, hall_up},
-	OrderDown = {Floor, hall_down},
-	OrderCab = {Floor, cab},
-	case lists:member(OrderUp, Orders) of
-		true -> 
-			NewUp = Orders -- [OrderUp],
-			remove_order(NewUp, Floor);
-		false -> ok
-	end,
-	case lists:member(OrderDown, Orders) of
-		true -> 
-			NewDown = Orders -- [OrderDown],
-			remove_order(NewDown, Floor);
-		false -> ok
-	end,
-	case lists:member(OrderCab, Orders) of
-		true -> 
-			NewCab = Orders -- [OrderCab],
-			remove_order(NewCab, Floor);
-		false -> ok
-	end,
-	Orders.
+	[First|_] = Orders,
+	case (element(1, First) == Floor) of
+		true ->
+			NewOrders = lists:keydelete(2, 1, Orders),
+			remove_order(NewOrders, Floor);
+		false ->
+			Orders
+	end.
 
 find_position([H|[]], _, Position) ->
 	Position;
