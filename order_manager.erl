@@ -65,7 +65,7 @@ add_order(Orders, NewOrder, WorldView) ->
 			end				
 	end.
 
-remove_order([], Floor) ->
+remove_order([], _) ->
 	[];
 
 remove_order(Orders, Floor) ->
@@ -78,7 +78,7 @@ remove_order(Orders, Floor) ->
 			Orders
 	end.
 
-find_position([H|[]], _, Position) ->
+find_position([_|[]], _, Position) ->
 	Position;
 
 find_position([PrevOrder|NextOrders], Order, Position) ->
