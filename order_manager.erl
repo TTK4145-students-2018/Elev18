@@ -12,7 +12,6 @@ start() ->
 	order_manager([]).
 
 order_manager(Orders) ->
-	io:format("order_manager: current orders: ~p~n", [Orders]),
 	receive 
 		{add, Order} ->
 			io:format("order_manager: adding order: ~p~n", [Order]),
@@ -21,11 +20,13 @@ order_manager(Orders) ->
 			NewOrders = add_order(Orders, Order, WorldView),
 			fsm ! {ev_new_order},
 			worldview ! {orders, NewOrders},
+			io:format("order_manager: new orders: ~p~n", [NewOrders]),
 			order_manager(NewOrders);
 		{remove, Floor} ->
 			io:format("order_manager: removing order: ~p~n", [Floor]),
 			NewOrders = remove_order(Orders, Floor),
 			worldview ! {orders, NewOrders},
+			io:format("order_manager: new orders: ~p~n", [NewOrders]),
 			order_manager(NewOrders);
 		{clear} ->
 			io:format("order_manager: clearing orders ~n"),

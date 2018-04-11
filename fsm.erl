@@ -70,10 +70,11 @@ st_moving() ->
 	worldview ! {request, wv, fsm},
 	receive {response, wv, WorldView} -> ok end,
 	[Dest|Rest] = element(4, WorldView),
+	DestFloor = element(1, Dest),
 	receive 
 		{ev_floor_reached, Floor} ->
 			% worldview ! {floor, Floor}, sending from EM instead
-			case Dest == Floor of
+			case DestFloor == Floor of
 				true ->
 					io:format("fsm: destination reached ~n"),
 					driver:set_motor_direction(driver, stop),
