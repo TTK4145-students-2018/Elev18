@@ -29,7 +29,7 @@ listener() ->
  	listener(ReceiveSocket).
 
 listener(ReceiveSocket) ->
-	{ok, {_Adress, ?SEND_PORT, NodeName}} = gen_udp:recv(RecvSocket, 0),
+	{ok, {_Adress, ?SEND_PORT, NodeName}} = gen_udp:recv(ReceiveSocket, 0),
 	Node = list_to_atom(NodeName),
 	case lists:member(Node, [node()|nodes()]) of
 		true ->
@@ -42,12 +42,6 @@ listener(ReceiveSocket) ->
 
 
 
-
-% Formats IP from a tuple to a string.
-format_IP(IPlist) ->
-	[_Head | IP] = lists:flatmap(fun(X) -> ['.', X] end, IPlist),
-	lists:concat(IP).
-
 broadcast() ->
 	{ok, SendSocket} = gen_udp:open(?SEND_PORT, [list, {active, true}, {broadcast, true}]),
 	broadcast(SendSocket).
@@ -56,3 +50,17 @@ broadcast(SendSocket) ->
 	ok = gen_udp:send(SendSocket, {255,255,255,255}, ?RECEIVE_PORT, atom_to_list(node())),
 	timer:sleep(2000),
 	broadcast(SendSocket).
+
+
+
+% Formats IP from a tuple to a string.
+format_IP(IPlist) ->
+	[_Head | IP] = lists:flatmap(fun(X) -> ['.', X] end, IPlist),
+	lists:concat(IP).
+
+update_worldview(Worldview, WorldviewList) ->
+	lists:foreach(fun (Node) -> Node ! {update_worldview, Worldview} end, nodes()),
+	receive {update_worldview, OtherWorldview} ->
+		update_worldview(Worldview, WorldviewList ++ [OtherWorldview]),
+	after 3000 ->
+		update_worldview(Worldview, WorldviewList)
