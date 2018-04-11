@@ -67,7 +67,8 @@ button_poller(Floor, ButtonType) ->
 			%NewOrder = {order, Floor, ButtonType},
 			%network ! NewOrder,
 			%io:format("Button pressed: ~p~n", [Floor]),
-			order_manager ! {add, {Floor, ButtonType}},
+			NewOrder = {Floor, ButtonType},
+			order_manager ! {add, NewOrder},
 			timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType)
 	end.

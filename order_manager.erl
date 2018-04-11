@@ -16,14 +16,14 @@ order_manager(Orders) ->
 	receive 
 		{add, Order} ->
 			io:format("order_manager: adding order: ~p~n", [Order]),
-			worldview ! {request, wv, fsm},
+			worldview ! {request, wv, order_manager},
 			receive {response, wv, WorldView} -> ok end,
 			NewOrders = add_order(Orders, Order, WorldView),
 			fsm ! {ev_new_order},
 			worldview ! {orders, NewOrders},
 			order_manager(NewOrders);
-		{remove, Order} ->
-			io:format("order_manager: removing order: ~p~n", [Order]),
+		{remove, Floor} ->
+			io:format("order_manager: removing order: ~p~n", [Floor]),
 			NewOrders = remove_order(Orders, Order),
 			worldview ! {orders, NewOrders},
 			order_manager(NewOrders);
