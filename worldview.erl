@@ -59,12 +59,22 @@ world(WorldView) ->
 
 get_direction(WorldView) ->
 	LastFloor = element(3, WorldView),
-	[NextFloor|Rest] = element(4, WorldView),
-	case LastFloor =:= NextFloor of
+	case is_empty(element(4, WorldView)) of
 		true -> stop;
 		false ->
-			case LastFloor < NextFloor of
-				true -> up;
-				false -> down
+			[NextOrder|_] = element(4, WorldView),
+			NextFloor = element(1, NextOrder),
+			case LastFloor == NextFloor of
+				true -> stop;
+				false ->
+					case LastFloor < NextFloor of
+						true -> up;
+						false -> down
+					end
 			end
 	end.
+
+is_empty([]) ->
+	true;
+is_empty(_) ->
+	false.

@@ -43,7 +43,7 @@ st_init() ->
 st_idle() ->
 	% io:format("fsm: elevator idle ~n"),
 	worldview ! {state, idle},
-	order_manager ! {request_new_order},
+	%order_manager ! {request_new_order},
 	receive 
 		{ev_new_order} ->
 			st_moving();
@@ -59,13 +59,16 @@ st_idle() ->
 			st_idle()
 	end.
 
-
 st_moving() ->
 	io:format("fsm: moving ~n"),
 	worldview ! {state, moving},
 	worldview ! {request, direction, fsm},
 	receive {response, direction, Direction} -> ok end,
 	driver:set_motor_direction(driver, Direction),
+	case Direction == stop of
+		true -> st_idle();
+		false -> ok
+	end,
 	worldview ! {direction, Direction},
 	worldview ! {request, wv, fsm},
 	receive {response, wv, WorldView} -> ok end,
@@ -100,13 +103,14 @@ st_doors_open() ->
 	receive
 	after 2000 ->
 		driver:set_door_open_light(driver, off),
-		order_manager ! {request_new_order},
-		receive
-			{ev_new_order} ->
-				st_moving();
-			{no_orders} ->
-				st_idle()
-		end
+		st_moving()
+		%order_manager ! {request_new_order},
+		%receive
+		%	{ev_new_order} ->
+		%		st_moving();
+		%	{no_orders} ->
+		%		st_idle()
+		%end
 	end.
 
 st_emergency() ->

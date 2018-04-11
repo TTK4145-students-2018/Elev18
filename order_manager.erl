@@ -65,11 +65,14 @@ add_order(Orders, NewOrder, WorldView) ->
 			end				
 	end.
 
+remove_order([], Floor) ->
+	[];
+
 remove_order(Orders, Floor) ->
 	[First|_] = Orders,
 	case (element(1, First) == Floor) of
 		true ->
-			NewOrders = lists:keydelete(2, 1, Orders),
+			NewOrders = lists:keydelete(Floor, 1, Orders),
 			remove_order(NewOrders, Floor);
 		false ->
 			Orders
@@ -79,6 +82,9 @@ find_position([H|[]], _, Position) ->
 	Position;
 
 find_position([PrevOrder|NextOrders], Order, Position) ->
+	% returns position for Order to be inserted in current orders.
+	% start with Position = 2, as ideal_first is used for the edge
+	% case of checking if the order can be placed at the very beginning
 	OrderFloor = element(1, Order),
 	OrderDir = element(2, Order),
 	[NextOrder|_] = NextOrders,

@@ -13,7 +13,8 @@
 % Calculate cost of changing direction
 % 
 scheduler(WorldViews, Order) ->
-	scheduler(WorldViews, Order, 100).
+	SortedViews = lists:keysort(1, WorldViews),
+	scheduler(SortedViews, Order, 100).
 
 scheduler([], _, _) ->
 	-1;
