@@ -83,4 +83,5 @@ update_worldview() ->
 %		end.
 
 send_simple_message(Process, Message) ->
-	lists:foreach(fun (Node) -> Node ! {Process, Message} end, nodes()).
+	lists:foreach(fun (Node) -> Node ! {Process, Message} end, nodes()),
+	send_simple_message(Process, Message).
