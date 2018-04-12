@@ -17,14 +17,17 @@ init() ->
 	NodeName = list_to_atom("elevator@" ++ format_IP(IPlist)), 	% generates a unique nodename
 
     %[ID, _T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
-    %worldview ! {id, ID},
+    ID = 161,
+    worldview ! {id, ID},
     
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
  	erlang:set_cookie(node(), 'Elev18'),
 
  	%node_center ! {network, init_complete}.
  	spawn(fun() -> listener() end),
- 	spawn(fun() -> broadcast() end).
+ 	spawn(fun() -> broadcast() end),
+ 	spawn(fun() -> update_worldview() end).
+ 	
 
 listener() ->
  	{ok, ReceiveSocket} = gen_udp:open(?RECV_PORT, [list, {active, false}]),
@@ -60,10 +63,24 @@ format_IP(IPlist) ->
 	[_Head | IP] = lists:flatmap(fun(X) -> ['.', X] end, IPlist),
 	lists:concat(IP).
 
-%update_worldview(Worldview, WorldviewList) ->
-%	lists:foreach(fun (Node) -> Node ! {update_worldview, Worldview} end, nodes()),
-%	receive {update_worldview, OtherWorldview} ->
-%		update_worldview(Worldview, WorldviewList ++ [OtherWorldview])
-%	after 3000 ->
-%		update_worldview(Worldview, WorldviewList)
-%	end.
+update_worldview() ->
+	worldview ! {request, wv, self()},
+ 	receive {response, wv, Worldview} ->
+ 		io:format("Local Worldview received!")
+ 		%update_worldview([Worldview])
+ 	after 3000 ->
+ 		update_worldview()
+ 	end.
+ 		
+
+%distribute_worldview() ->
+%	receive {response, wv, LocalWV} ->		
+%		lists:foreach(fun (Node) -> Node ! {update_worldview, Worldview} end, nodes()),
+%		receive {update_worldview, OtherWorldview} ->
+%			update_worldview(Worldview, WorldviewList ++ [OtherWorldview])
+%		after 3000 ->
+%		update_worldview([NewWorldView])
+%		end.
+
+send_simple_message(Process, Message) ->
+	lists:foreach(fun (Node) -> Node ! {Process, Message} end, nodes()).
