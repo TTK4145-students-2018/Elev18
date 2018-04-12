@@ -9,10 +9,10 @@
 start() ->
 	register(node_center, self()),
 	%{ok, Port} = io:read("Elevator port: ", "~d"),
-	{ok, DriverPid} = driver:start({127,0,0,1}, 011095),
+	{ok, DriverPid} = driver:start(),							%{127,0,0,1}, 011095
 	register(driver, DriverPid),
 	register(worldview, spawn(fun worldview:start/0)),
-	register(network, spawn(fun network:start/0)),
+	register(network, spawn(fun network_UDP:start/0)),
 	%receive {network, init_complete} -> ok end,
 
 

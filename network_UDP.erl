@@ -16,13 +16,15 @@ init() ->
 	IPlist = tuple_to_list(element(1, hd(LongIPlist))), 		% Header of IPlist is local IP adress 
 	NodeName = list_to_atom("elevator@" ++ format_IP(IPlist)), 	% generates a unique nodename
 
-    [ID, _T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
+    %[ID, _T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
     %worldview ! {id, ID},
     
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
  	erlang:set_cookie(node(), 'Elev18'),
 
- 	node_center ! {network, init_complete}.
+ 	%node_center ! {network, init_complete}.
+ 	spawn(fun() -> listener() end),
+ 	spawn(fun() -> broadcast() end).
 
 listener() ->
  	{ok, ReceiveSocket} = gen_udp:open(?RECV_PORT, [list, {active, false}]),
@@ -33,11 +35,11 @@ listener(ReceiveSocket) ->
 	Node = list_to_atom(NodeName),
 	case lists:member(Node, [node()|nodes()]) of
 		true ->
-			listen(ReceiveSocket);
+			listener(ReceiveSocket);
 		false ->
 			net_adm:ping(Node), % ping node to create a connection
 			io:format("Node connected: ~p~n", [Node]), %debug
-			listen(ReceiveSocket)
+			listener(ReceiveSocket)
 		end.
 
 
@@ -47,7 +49,7 @@ broadcast() ->
 	broadcast(SendSocket).
 
 broadcast(SendSocket) ->
-	ok = gen_udp:send(SendSocket, {255,255,255,255}, ?RECEIVE_PORT, atom_to_list(node())),
+	ok = gen_udp:send(SendSocket, {255,255,255,255}, ?RECV_PORT, atom_to_list(node())),
 	timer:sleep(2000),
 	broadcast(SendSocket).
 
@@ -58,9 +60,10 @@ format_IP(IPlist) ->
 	[_Head | IP] = lists:flatmap(fun(X) -> ['.', X] end, IPlist),
 	lists:concat(IP).
 
-update_worldview(Worldview, WorldviewList) ->
-	lists:foreach(fun (Node) -> Node ! {update_worldview, Worldview} end, nodes()),
-	receive {update_worldview, OtherWorldview} ->
-		update_worldview(Worldview, WorldviewList ++ [OtherWorldview]),
-	after 3000 ->
-		update_worldview(Worldview, WorldviewList)
+%update_worldview(Worldview, WorldviewList) ->
+%	lists:foreach(fun (Node) -> Node ! {update_worldview, Worldview} end, nodes()),
+%	receive {update_worldview, OtherWorldview} ->
+%		update_worldview(Worldview, WorldviewList ++ [OtherWorldview])
+%	after 3000 ->
+%		update_worldview(Worldview, WorldviewList)
+%	end.
