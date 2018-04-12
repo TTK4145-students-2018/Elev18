@@ -1,5 +1,5 @@
 -module(network).
--export([start/0]).
+-export([start/0, send_simple_message/2]).
 
 -define(RECV_PORT, 7565).
 -define(SEND_PORT, 7479).
@@ -83,5 +83,7 @@ update_worldview() ->
 %		end.
 
 send_simple_message(Process, Message) ->
-	lists:foreach(fun (Node) -> Node ! {Process, Message} end, nodes()),
+	[Node, _T] = nodes(),
+	Node ! {Process, Message},
+	%lists:foreach(fun (Node) -> Node ! {Process, Message} end, nodes()),
 	send_simple_message(Process, Message).
