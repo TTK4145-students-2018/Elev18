@@ -83,8 +83,9 @@ find_position([_|[]], _, Position) ->
 
 find_position([PrevOrder|NextOrders], Order, Position) ->
 	% returns position for Order to be inserted in current orders.
-	% start with Position = 2, as ideal_first is used for the edge
-	% case of checking if the order can be placed at the very beginning
+	% NB! START WITH Position = 2, as ideal_first is used for the edge
+	% case of checking if the order can be placed at the very beginning.
+	% Calling it with Position = 1 would return one value too low.
 	OrderFloor = element(1, Order),
 	OrderDir = element(2, Order),
 	[NextOrder|_] = NextOrders,
@@ -100,11 +101,12 @@ ideal_first(NextOrder, WorldView, OrderFloor, OrderDir) ->
 	NextFloor = element(1, NextOrder),
 	Between = ((OrderFloor > Position) and (OrderFloor < NextFloor)) or 
 	((OrderFloor < Position) and (OrderFloor > NextFloor)),
+	Cab = ((NextFloor == OrderFloor) and (OrderDir == cab)),
 	case Position < NextFloor of
 		true -> Dir = hall_up;
 		false -> Dir = hall_down
 	end,
-	Between and (OrderDir == Dir).
+	(Between and (OrderDir == Dir)) or Cab.
 
 ideal(PrevOrder, NextOrder, OrderFloor, hall_down) ->
 	% returns true if position between prevorder and nextorder is gucci

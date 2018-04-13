@@ -11,13 +11,13 @@ watchdog(WDHandler, Data, Timeout) ->
 		{kill, Data} ->
 			WDPID = self(),
 			WDHandler ! {WDPID, dead},
-			io:format("wd_watchdog: watchdog died: ~p~n", [self(), Data]),
+			io:format("watchdog: watchdog died: ~p~n", [self(), Data]),
 			exit(self(), normal) %exit(PID, reason)
 	after
 		Timeout ->
 			WDPID = self(),
 			WDHandler ! {WDPID, kick, Data},
-			io:format("wd_watchdog: timed out, kicking the dog: ~p~n", [self(), Data]),
+			io:format("watchdog: timed out, kicking the dog: ~p~n", [self(), Data]),
 			exit(self(), normal)
 	end.
 
