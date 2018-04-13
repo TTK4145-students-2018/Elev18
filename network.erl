@@ -78,7 +78,7 @@ update_worldviews(WorldViews) ->
 			UpdatedViews = reevaluate(DeadOrders, NewViews, OwnID),
 			update_worldviews(UpdatedViews);
 		{order, Order} ->
-			io:format("Got Node down ~p~n")
+			io:format("Got Node down ~p~n"),
 			worldview ! {request, wv, update_worldviews},
 			receive {response, wv, WorldView} -> ok end,
 			OwnID = element(1, WorldView),
