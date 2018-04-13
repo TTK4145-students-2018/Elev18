@@ -42,7 +42,7 @@ listener(ReceiveSocket) ->
 			listener(ReceiveSocket);
 		false ->
 			net_adm:ping(Node), % ping node to create a connection
-			erlang:monitor_node(Node),
+			%erlang:monitor_node(Node, true),
 			io:format("Node connected: ~p~n", [Node]), %debug
 			listener(ReceiveSocket)
 	end.
