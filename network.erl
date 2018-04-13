@@ -78,6 +78,7 @@ update_worldviews(WorldViews) ->
 			UpdatedViews = reevaluate(DeadOrders, NewViews, OwnID),
 			update_worldviews(UpdatedViews);
 		{order, Order} ->
+			io:format("Got Node down ~p~n")
 			worldview ! {request, wv, update_worldviews},
 			receive {response, wv, WorldView} -> ok end,
 			OwnID = element(1, WorldView),
@@ -132,7 +133,7 @@ moniteur() ->
 	lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end, nodes()),
 	receive
 		{nodedown, Node} ->
-			io:format("Node down!!"),
+			io:format("Node down!! ~p~n"),
 			update_worldviews ! {died, Node},
 			moniteur()
 	after 1000 ->
