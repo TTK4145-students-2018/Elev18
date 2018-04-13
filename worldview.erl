@@ -15,6 +15,12 @@ start() ->
 
 world(WorldView) ->
 	io:format("current worldview: ~p~n", [WorldView]),
+	try network ! {wv, WorldView} of
+		_ -> ok
+	catch
+		Throw -> {throw, caught, Throw}
+	end,
+
 	receive
 		{state, State} ->
 			NewView = setelement(2, WorldView, State),

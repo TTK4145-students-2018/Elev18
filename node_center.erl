@@ -19,7 +19,7 @@ start() ->
 	register(event_manager, spawn(fun event_manager:start/0)),
 
 	register(order_manager, spawn(fun order_manager:start/0)),
-	register(fsm, spawn(fun fsm:start/0)),
+	register(fsm, spawn(fun fsm:start/0)).
 
 
 	%spawn(fun basic_test:init_drive/0).

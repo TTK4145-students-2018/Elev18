@@ -1,5 +1,5 @@
 -module(hf). %"helper functions"
--export([fac/2, flip/1, list_insert/3]).
+-export([fac/2, flip/1, list_insert/3, format_IP/1]).
 
 % simple helper functions that can be used
 % by all modules
@@ -20,7 +20,7 @@ list_insert(List, Element, Position) ->
          ++ [Element] 
          ++ lists:nthtail(Position - 1, List).
 
-list_replace()
+%list_replace()
 
 % Formats IP from a tuple to a string.
 format_IP(IPlist) ->

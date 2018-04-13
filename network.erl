@@ -1,5 +1,5 @@
 -module(network).
--export([start/0, send_simple_message/2]).
+-export([start/0]).
 
 -define(RECV_PORT, 7565).
 -define(SEND_PORT, 7479).
@@ -14,7 +14,7 @@ init() ->
 
 	{ok, LongIPlist} = inet:getif(), 							% inet:getif() gives a list of tuples of IPs
 	IPlist = tuple_to_list(element(1, hd(LongIPlist))), 		% Header of IPlist is local IP adress 
-	NodeName = list_to_atom("elevator@" ++ format_IP(IPlist)), 	% generates a unique nodename
+	NodeName = list_to_atom("elevator@" ++ hf:format_IP(IPlist)), 	% generates a unique nodename
 
     [ID|_T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
     worldview ! {id, ID},
@@ -59,20 +59,21 @@ broadcast(SendSocket) ->
 
 
 distribute_worldview() ->
-	worldview ! {request, wv, self()},
- 	receive {response, wv, Worldview} ->
+	%worldview ! {request, wv, self()},
+ 	receive {wv, Worldview} ->
  		io:format("Local Worldview received!"),
  		send_to_all(fetch_worldview, {wv, Worldview}),
- 		update_worldview()
+ 		distribute_worldview()
  	after 1000 ->
- 		update_worldview()
+ 		distribute_worldview()
  	end.
 
 fetch_worldview(WorldviewList) ->
 	receive {wv, Worldview} ->
-		list_replace(Worldviewlist, Worldview)
+		%list_replace(WorldviewList, Worldview)
+		io:format("Received external worldview")
 	end,
-	fetch_worldview().
+	fetch_worldview(WorldviewList).
 
 
 
