@@ -116,7 +116,7 @@ send_to_all(Process, Message) ->
 	lists:foreach(fun(Node) -> {Process, Node} ! Message end, nodes()).
 
 reevaluate([], _, _) ->
-	1.
+	1;
 
 reevaluate(Orders, WorldViews, OwnID) ->
 	% to be run when a node dies, reevaluates all orders from the
