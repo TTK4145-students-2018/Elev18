@@ -42,7 +42,7 @@ listener(ReceiveSocket) ->
 			listener(ReceiveSocket);
 		false ->
 			net_adm:ping(Node), % ping node to create a connection
-			erlang:monitor_node(Node),
+			%erlang:monitor_node(Node, true),
 			io:format("Node connected: ~p~n", [Node]), %debug
 			listener(ReceiveSocket)
 	end.
@@ -78,17 +78,17 @@ update_worldviews(WorldViews) ->
 			UpdatedViews = reevaluate(DeadOrders, NewViews, OwnID),
 			update_worldviews(UpdatedViews);
 		{order, Order} ->
-			worldview ! {request, wv, update_worldviews},
-			receive {response, wv, WorldView} -> ok end,
-			OwnID = element(1, WorldView),
-			BestID = scheduler:scheduler(WorldViews, Order),
-			case OwnID == BestID of
-				true ->
-					order_manager ! {add, Order},
-					update_worldviews(WorldViews);
-				false ->
-					update_worldviews(WorldViews)
-			end
+			%worldview ! {request, wv, update_worldviews},
+			%receive {response, wv, WorldView} -> ok end,
+			%OwnID = element(1, WorldView),
+			%BestID = scheduler:scheduler(WorldViews, Order),
+			%case OwnID == BestID of
+			%	true ->
+			order_manager ! {add, Order},
+			update_worldviews(WorldViews)
+			%	false ->
+			%		update_worldviews(WorldViews)
+			%end
 	end.
 
 order_distributor() ->
