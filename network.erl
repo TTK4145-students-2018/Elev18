@@ -16,8 +16,7 @@ init() ->
 	IPlist = tuple_to_list(element(1, hd(LongIPlist))), 		% Header of IPlist is local IP adress 
 	NodeName = list_to_atom("elevator@" ++ format_IP(IPlist)), 	% generates a unique nodename
 
-    %[ID, _T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
-    ID = 161,
+    [ID|_T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
     worldview ! {id, ID},
     
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
@@ -26,7 +25,8 @@ init() ->
  	%node_center ! {network, init_complete}.
  	spawn(fun() -> listener() end),
  	spawn(fun() -> broadcast() end),
- 	spawn(fun() -> update_worldview() end).
+ 	spawn(fun() -> distribute_worldview() end),
+ 	spawn(fun() -> fetch_worldview([]) end).
  	
 
 listener() ->
@@ -58,32 +58,24 @@ broadcast(SendSocket) ->
 
 
 
-% Formats IP from a tuple to a string.
-format_IP(IPlist) ->
-	[_Head | IP] = lists:flatmap(fun(X) -> ['.', X] end, IPlist),
-	lists:concat(IP).
-
-update_worldview() ->
+distribute_worldview() ->
 	worldview ! {request, wv, self()},
  	receive {response, wv, Worldview} ->
- 		io:format("Local Worldview received!")
- 		%update_worldview([Worldview])
- 	after 3000 ->
+ 		io:format("Local Worldview received!"),
+ 		send_to_all(fetch_worldview, {wv, Worldview}),
+ 		update_worldview()
+ 	after 1000 ->
  		update_worldview()
  	end.
- 		
 
-%distribute_worldview() ->
-%	receive {response, wv, LocalWV} ->		
-%		lists:foreach(fun (Node) -> Node ! {update_worldview, Worldview} end, nodes()),
-%		receive {update_worldview, OtherWorldview} ->
-%			update_worldview(Worldview, WorldviewList ++ [OtherWorldview])
-%		after 3000 ->
-%		update_worldview([NewWorldView])
-%		end.
+fetch_worldview(WorldviewList) ->
+	receive {wv, Worldview} ->
+		list_replace(Worldviewlist, Worldview)
+	end,
+	fetch_worldview().
 
-send_simple_message(Process, Message) ->
-	[Node, _T] = nodes(),
-	Node ! {Process, Message},
-	%lists:foreach(fun (Node) -> Node ! {Process, Message} end, nodes()),
-	send_simple_message(Process, Message).
+
+
+send_to_all(Process, Message) ->
+	lists:foreach(fun(Node) -> {Process, Node} ! Message end, nodes()).
+

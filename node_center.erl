@@ -20,12 +20,6 @@ start() ->
 
 	register(order_manager, spawn(fun order_manager:start/0)),
 	register(fsm, spawn(fun fsm:start/0)),
-	
-	network:send_simple_message(node_center, "I am initialized"),
-	receive {node_center, Message} ->
-		io:format("I got the message!")
-	end.
-
 
 
 	%spawn(fun basic_test:init_drive/0).

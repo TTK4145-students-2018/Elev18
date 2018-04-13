@@ -19,3 +19,10 @@ list_insert(List, Element, Position) ->
   lists:sublist(List, Position - 1) 
          ++ [Element] 
          ++ lists:nthtail(Position - 1, List).
+
+list_replace()
+
+% Formats IP from a tuple to a string.
+format_IP(IPlist) ->
+	[_Head | IP] = lists:flatmap(fun(X) -> ['.', X] end, IPlist),
+	lists:concat(IP).
