@@ -59,14 +59,12 @@ button_poller(Floor, ButtonType) ->
 	case ButtonState of
 		0 ->
 			%timer:sleep(?DELAY),
-			driver:set_order_button_light(driver, ButtonType, Floor, off),
 			button_poller(Floor + 1, ButtonType);
 		1 ->
 			%NewOrder = {order, Floor, ButtonType},
 			%network ! NewOrder,
 			NewOrder = {Floor, ButtonType},
 			order_manager ! {add, NewOrder},
-			driver:set_order_button_light(driver, ButtonType, Floor, on),
 			timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType)
 	end.

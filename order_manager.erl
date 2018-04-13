@@ -21,12 +21,20 @@ order_manager(Orders) ->
 			fsm ! {ev_new_order},
 			worldview ! {orders, NewOrders},
 			io:format("order_manager: new orders: ~p~n", [NewOrders]),
+
+			Floor = element(1, Order),
+			ButtonType = element(2, Order),
+			driver:set_order_button_light(driver, ButtonType, Floor, on),
 			order_manager(NewOrders);
 		{remove, Floor} ->
 			io:format("order_manager: removing order: ~p~n", [Floor]),
 			NewOrders = remove_order(Orders, Floor),
 			worldview ! {orders, NewOrders},
 			io:format("order_manager: new orders: ~p~n", [NewOrders]),
+			
+			Floor = element(1, Order),
+			ButtonType = element(2, Order),
+			driver:set_order_button_light(driver, ButtonType, Floor, off),
 			order_manager(NewOrders);
 		{clear} ->
 			io:format("order_manager: clearing orders ~n"),
