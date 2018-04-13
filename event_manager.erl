@@ -73,3 +73,21 @@ button_poller(Floor, ButtonType) ->
 event_handler() ->
 	1.
 
+reset_button(4, cab) ->
+	1;
+
+reset_button(4, hall_down) ->
+	1;
+
+reset_button(3, hall_up) ->
+	1;
+
+reset_button(Floor, ButtonType) ->
+	driver:set_order_button_light(driver, ButtonType, Floor, off),
+	reset_button(Floor + 1, ButtonType).
+
+reset_all() ->
+	reset_button(0, cab),
+	reset_button(1, hall_down),
+	reset_button(0, hall_up).
+
