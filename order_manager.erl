@@ -21,20 +21,12 @@ order_manager(Orders) ->
 			fsm ! {ev_new_order},
 			worldview ! {orders, NewOrders},
 			io:format("order_manager: new orders: ~p~n", [NewOrders]),
-
-			Floor = element(1, Order),
-			ButtonType = element(2, Order),
-			driver:set_order_button_light(driver, ButtonType, Floor, on),
 			order_manager(NewOrders);
 		{remove, Floor} ->
 			io:format("order_manager: removing order: ~p~n", [Floor]),
 			NewOrders = remove_order(Orders, Floor),
 			worldview ! {orders, NewOrders},
 			io:format("order_manager: new orders: ~p~n", [NewOrders]),
-			
-			Floor = element(1, Order),
-			ButtonType = element(2, Order),
-			driver:set_order_button_light(driver, ButtonType, Floor, off),
 			order_manager(NewOrders);
 		{clear} ->
 			io:format("order_manager: clearing orders ~n"),
@@ -61,6 +53,7 @@ add_order(Orders, NewOrder, WorldView) ->
 	[First|_] = Orders,
 	OrderFloor = element(1, NewOrder),
 	OrderDir = element(2, NewOrder),
+	driver:set_order_button_light(driver, OrderDir, OrderFloor, on),
 	case lists:member(NewOrder, Orders) of
 		true -> 
 			Orders;
@@ -70,7 +63,7 @@ add_order(Orders, NewOrder, WorldView) ->
 					NewOrders = hf:list_insert(Orders, NewOrder, 1);
 				false ->
 					NewOrders = hf:list_insert(Orders, NewOrder, find_position(Orders, NewOrder, 2))
-			end				
+			end
 	end.
 
 remove_order([], _) ->
@@ -80,6 +73,9 @@ remove_order(Orders, Floor) ->
 	[First|_] = Orders,
 	case (element(1, First) == Floor) of
 		true ->
+			OrderFloor = element(1, First),
+			OrderDir = element(2, First),
+			driver:set_order_button_light(driver, OrderDir, OrderFloor, off),
 			NewOrders = lists:keydelete(Floor, 1, Orders),
 			remove_order(NewOrders, Floor);
 		false ->
