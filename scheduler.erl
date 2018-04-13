@@ -1,17 +1,18 @@
 -module(scheduler).
 -compile(export_all).
 
-% Calculates cost, and determines whether it is optimal 
-% for this elevator to perform a task instead of one of the
-% others. Keeps track of worldview* and own state (from fsm) to
-% serve as a basis of calculations. Needs the same worldview as
-% the other schedulers, to make sure every scheduler reaches
-% decisions based on correct information about the entire system. 
+% Evaluates cost for a list of worldviews to accept an order. Returns the ID
+% of the elevator that results in the lowest cost. Deterministic, so will return
+% the lowest ID in case of a tie.
 
-% TODO:
-% Calculate cost of moving a number of floors
-% Calculate cost of changing direction
-% 
+% Cost from worldview based on:
+% Number of orders currently taken
+% Absolute distance from current position to the floor of the order
+% Placement of the new order (relative to the other orders)
+
+% If the order already exists in a worldview, its cost will be returned
+% as 0, and that elevator will "take" the order. (order_manager does the rest)
+
 scheduler(WorldViews, Order) ->
 	SortedViews = lists:keysort(1, WorldViews),
 	scheduler(SortedViews, Order, 100).

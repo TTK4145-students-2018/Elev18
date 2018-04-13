@@ -1,22 +1,9 @@
 -module(fsm).
 -export([start/0]).
 
-% the finite state machine of our system
-% is to have control over the internal
-% state of the node it runs on,
-% based on events received from the driver
-
-% TODO:
-% event handler for for example set indicators and such
-% interface with a poller that sends events
-% FIND OUT IF EVENT_MANAGER SHOULD SEE IF DEST REACHED
-% OR IF FSM SHOULD ASK ORDER_MANAGER?
-% add worldview tuple {State, LastFloor, Dir, ID, LocalOrders}
-% to all states
-
-%WorldView ~ {ID, state, LastFloor, LocalOrders, dir}
-% access elements with: element(x, WorldView)
-% ex. element(1, WorldView) returns ID
+% Finite state machine, that keeps control over the state of the elevator.
+% Does some interfacing with driver, such as checking if the correct destination
+% is reached, and stopping motor direction thereafter.
 
 start() ->
 	st_init().
@@ -71,7 +58,7 @@ st_moving() ->
 	[Dest|_] = element(4, WorldView),
 	DestFloor = element(1, Dest),
 	case Direction == stop of
-		true -> fsm ! {ev_floor_reached, element(1, Dest)};
+		true -> fsm ! {ev_floor_reached, DestFloor};
 		false -> ok
 	end,
 	receive 

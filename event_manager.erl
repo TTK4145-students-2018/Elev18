@@ -6,10 +6,9 @@
 
 %-export([start/0]).
 
-% poller of the system, listening for button presses
-% and such, sends events to fsm
-
-% TODO:
+% Poller of our system, currently listening for order-button-presses of all
+% types in all floors, as well as floor sensor. Sends information to fsm and
+% worldview.
 
 start() ->
     spawn(fun() -> floor_sensor_poller(1) end),
@@ -56,17 +55,14 @@ button_poller(3, hall_up) ->
 	button_poller(0, hall_up);
 
 button_poller(Floor, ButtonType) ->
-	%io:format("halla fra button poller ~n"),
 	ButtonState = driver:get_order_button_state(driver, Floor, ButtonType),
 	case ButtonState of
 		0 ->
-			%io:format("Nope ~p~n", [Floor]),
 			%timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType);
 		1 ->
 			%NewOrder = {order, Floor, ButtonType},
 			%network ! NewOrder,
-			%io:format("Button pressed: ~p~n", [Floor]),
 			NewOrder = {Floor, ButtonType},
 			order_manager ! {add, NewOrder},
 			timer:sleep(?DELAY),
