@@ -64,7 +64,8 @@ button_poller(Floor, ButtonType) ->
 			%NewOrder = {order, Floor, ButtonType},
 			%network ! NewOrder,
 			NewOrder = {Floor, ButtonType},
-			order_manager ! {add, NewOrder},
+			%order_manager ! {add, NewOrder},
+			order_distributor ! {new, NewOrder},
 			timer:sleep(?DELAY),
 			button_poller(Floor + 1, ButtonType)
 	end.

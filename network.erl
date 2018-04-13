@@ -24,7 +24,8 @@ init() ->
 
  	spawn(fun() -> listener() end),
  	spawn(fun() -> broadcast() end),
- 	register(net_worldviews, spawn(fun() -> update_worldviews([]) end)),
+ 	register(update_worldviews, spawn(fun() -> update_worldviews([]) end)),
+ 	register(order_distributor, spawn(fun order_distributor/0)),
 
  	worldview ! {network, init_complete}.
  	
@@ -41,6 +42,7 @@ listener(ReceiveSocket) ->
 			listener(ReceiveSocket);
 		false ->
 			net_adm:ping(Node), % ping node to create a connection
+			erlang:monitor_node(Node),
 			io:format("Node connected: ~p~n", [Node]), %debug
 			listener(ReceiveSocket)
 	end.
@@ -55,16 +57,17 @@ broadcast(SendSocket) ->
 	broadcast(SendSocket).
 
 update_worldviews(WorldViews) ->
+	io:format("Current worldviews: ~p~n", [WorldViews]),
 	receive 
 		{self, wv, WorldView} ->
-			send_to_all(net_worldviews, {other, wv, WorldView}),
+			send_to_all(update_worldviews, {other, wv, WorldView}),
 			NewViews = replace_wv(WorldViews, WorldView),
 			update_worldviews(NewViews);
 		{other, wv, WorldView} ->
 			NewViews = replace_wv(WorldViews, WorldView),
 			update_worldviews(NewViews);
 		{died, ID} ->
-			worldview ! {request, wv, net_worldviews},
+			worldview ! {request, wv, update_worldviews},
 			receive {response, wv, WorldView} -> ok end,
 			OwnID = element(1, WorldView),
 			io:format("Node died: ~p~n", [ID]),
@@ -73,8 +76,28 @@ update_worldviews(WorldViews) ->
 			DeadOrders = element(3, DeadWV),
 			NewViews = lists:keydelete(ID, 1, WorldViews),
 			UpdatedViews = reevaluate(DeadOrders, NewViews, OwnID),
-			update_worldviews(UpdatedViews)
+			update_worldviews(UpdatedViews);
+		{order, Order} ->
+			worldview ! {request, wv, update_worldviews},
+			receive {response, wv, WorldView} -> ok end,
+			OwnID = element(1, WorldView),
+			BestID = scheduler:scheduler(WorldViews, Order),
+			case OwnID == BestID of
+				true ->
+					order_manager ! {add, Order},
+					update_worldviews(WorldViews);
+				false ->
+					update_worldviews(WorldViews)
+			end
 	end.
+
+order_distributor() ->
+	receive
+		{new, Order} ->
+			send_to_all(update_worldviews, {order, Order}),
+			update_worldviews ! {order, Order}
+	end,
+	order_distributor().
 
 replace_wv(WorldViews, WorldView) ->
 	OwnID = element(1, WorldView),
@@ -105,3 +128,4 @@ reevaluate(Orders, WorldViews, OwnID) ->
 			reevaluate(Rest, WorldViews, OwnID)
 	end.
 
+%moniteur() ->

@@ -16,7 +16,7 @@ start() ->
 
 
 world(WorldView) ->
-	net_worldviews ! {self, wv, WorldView},
+	update_worldviews ! {self, wv, WorldView},
 	%io:format("current worldview: ~p~n", [WorldView]),
 	receive
 		{state, State} ->
