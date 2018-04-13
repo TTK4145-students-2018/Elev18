@@ -114,7 +114,7 @@ ideal(PrevOrder, NextOrder, OrderFloor, hall_down) ->
 	NextDir = element(2, NextOrder),
 	Normal = (LastDir == hall_down) and (OrderFloor >= NextFloor) and (OrderFloor =< LastFloor),
 	Special = (LastDir == hall_up) and (NextDir == hall_down) and (OrderFloor >= NextFloor),
-	Cab = (LastFloor > NextFloor) and (OrderFloor >= LastFloor) and (OrderFloor =< NextFloor),
+	Cab = (LastFloor > NextFloor) and (OrderFloor =< LastFloor) and (OrderFloor >= NextFloor),
 	Cab or Normal or Special;
 
 ideal(PrevOrder, NextOrder, OrderFloor, hall_up) ->
@@ -124,7 +124,7 @@ ideal(PrevOrder, NextOrder, OrderFloor, hall_up) ->
 	NextDir = element(2, NextOrder),
 	Normal = (LastDir == hall_up) and (OrderFloor =< NextFloor) and (OrderFloor >= LastFloor),
 	Special = (LastDir == hall_down) and (NextDir == hall_up) and (OrderFloor =< NextFloor),
-	Cab = (LastFloor < NextFloor) and (OrderFloor =< LastFloor) and (OrderFloor >= NextFloor),
+	Cab = (LastFloor < NextFloor) and (OrderFloor >= LastFloor) and (OrderFloor =< NextFloor),
 	Cab or Normal or Special;
 
 ideal(PrevOrder, NextOrder, OrderFloor, cab) ->
