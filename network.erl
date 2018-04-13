@@ -121,7 +121,7 @@ reevaluate(Orders, WorldViews, OwnID) ->
 	% scheduler matches OwnID, the order is added.
 	case Orders == [] of
 		true ->
-			exit()
+			exit("No orders")
 	end,
 	case (scheduler:scheduler(WorldViews, First) == OwnID) of
 		true ->
