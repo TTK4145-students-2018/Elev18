@@ -78,7 +78,6 @@ update_worldviews(WorldViews) ->
 			UpdatedViews = reevaluate(DeadOrders, NewViews, OwnID),
 			update_worldviews(UpdatedViews);
 		{order, Order} ->
-			io:format("Got Node down ~n"),
 			worldview ! {request, wv, update_worldviews},
 			receive {response, wv, WorldView} -> ok end,
 			OwnID = element(1, WorldView),
@@ -120,7 +119,10 @@ reevaluate(Orders, WorldViews, OwnID) ->
 	% to be run when a node dies, reevaluates all orders from the
 	% dead node, and adds them to appropriate node. If id returned from
 	% scheduler matches OwnID, the order is added.
-	[First|Rest] = Orders,
+	case Orders == [] of
+		true ->
+			exit()
+	end,
 	case (scheduler:scheduler(WorldViews, First) == OwnID) of
 		true ->
 			order_manager ! {add, First},
