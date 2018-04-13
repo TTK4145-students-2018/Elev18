@@ -64,10 +64,15 @@ get_distance(WorldView, Order) ->
 
 order_placement(WorldView, Order) ->
 	Orders = element(4, WorldView),
-	[First|_] = Orders,
-	case order_manager:ideal_first(First, WorldView, element(1, Order), element(2, Order)) of
-		true -> 1;
-		false -> order_manager:find_position(Orders, Order, 2)
+	case Orders == [] of
+		true ->
+			1;
+		false ->
+			[First|_] = Orders,
+			case order_manager:ideal_first(First, WorldView, element(1, Order), element(2, Order)) of
+				true -> 1;
+				false -> order_manager:find_position(Orders, Order, 2)
+			end
 	end.
 
 
