@@ -1,0 +1,12 @@
+Turn on lamps on all elevators
+Extra cost for change in direction
+Not steal cab orders
+
+General message flow
+	Acks for order passing
+	Acks for order accept
+
+Moniteur
+
+Watchdog implement
+

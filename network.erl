@@ -16,8 +16,8 @@ init() ->
 	IPlist = tuple_to_list(element(1, hd(LongIPlist))), 		% Header of IPlist is local IP adress 
 	NodeName = list_to_atom("elevator@" ++ hf:format_IP(IPlist)), 	% generates a unique nodename
 
-    [ID|_T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
-    worldview ! {id, ID},
+    %[ID|_T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
+    worldview ! {id, NodeName},
     
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
  	erlang:set_cookie(node(), 'Elev18'),
@@ -26,6 +26,7 @@ init() ->
  	spawn(fun() -> broadcast() end),
  	register(update_worldviews, spawn(fun() -> update_worldviews([]) end)),
  	register(order_distributor, spawn(fun order_distributor/0)),
+ 	spawn(fun() -> moniteur() end),
 
  	worldview ! {network, init_complete}.
  	
@@ -127,7 +128,10 @@ reevaluate(Orders, WorldViews, OwnID) ->
 			reevaluate(Rest, WorldViews, OwnID)
 	end.
 
-%moniteur() ->
-%	lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end),
-%	receive
-%		{nodedown, Node} ->
+moniteur() ->
+	lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end),
+	receive
+		{nodedown, Node} ->
+			update_worldviews ! {died, Node}
+	end.
+	moniteur().
