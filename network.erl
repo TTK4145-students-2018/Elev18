@@ -84,7 +84,7 @@ update_worldviews(WorldViews) ->
 			case OwnID == BestID of
 				true ->
 					order_manager ! {add, Order},
-					update_worldviews(WorldViews)
+					update_worldviews(WorldViews);
 				false ->
 					update_worldviews(WorldViews)
 			end
