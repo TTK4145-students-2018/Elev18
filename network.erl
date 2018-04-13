@@ -133,7 +133,7 @@ moniteur() ->
 	receive
 		{nodedown, Node} ->
 			io:format("Node down!!"),
-			update_wordviews ! {died, Node},
+			update_worldviews ! {died, Node},
 			moniteur()
 	after 1000 ->
 		moniteur()
