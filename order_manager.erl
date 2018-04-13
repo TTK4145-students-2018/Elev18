@@ -106,7 +106,7 @@ ideal_first(NextOrder, WorldView, OrderFloor, OrderDir) ->
 		true -> Dir = hall_up;
 		false -> Dir = hall_down
 	end,
-	(Between and (OrderDir == Dir)) or Cab.
+	(Between and ((OrderDir == Dir) or (OrderDir == cab))) or Cab.
 
 ideal(PrevOrder, NextOrder, OrderFloor, hall_down) ->
 	% returns true if position between prevorder and nextorder is gucci
