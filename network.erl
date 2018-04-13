@@ -132,6 +132,9 @@ moniteur() ->
 	lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end, nodes()),
 	receive
 		{nodedown, Node} ->
-			update_worldviews ! {died, Node}
-	end,
-	moniteur().
+			io:format("Node down!!"),
+			update_wordviews ! {died, Node},
+			moniteur()
+	after 1000 ->
+		moniteur()
+	end.
