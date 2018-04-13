@@ -10,3 +10,8 @@ Moniteur
 
 Watchdog implement
 
+
+
+
+Bug report
+*Orders made during init are not completed  (watchdog will probably fix)

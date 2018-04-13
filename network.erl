@@ -73,8 +73,11 @@ update_worldviews(WorldViews) ->
 			io:format("Node died: ~p~n", [ID]),
 			io:format("distributing orders ~n"),
 			{_, DeadWV} = lists:keysearch(ID, 1, WorldViews),
-			DeadOrders = element(3, DeadWV),
+			io:format("DeadWV: ~p~n", [DeadWV]),
+			DeadOrders = element(4, DeadWV),
+			io:format("DeadOrders: ~p~n", [DeadOrders]),
 			NewViews = lists:keydelete(ID, 1, WorldViews),
+			io:format("NewViews: ~p~n", [NewViews]),
 			UpdatedViews = reevaluate(DeadOrders, NewViews, OwnID),
 			update_worldviews(UpdatedViews);
 		{order, Order} ->
@@ -112,17 +115,14 @@ replace_wv(WorldViews, WorldView) ->
 send_to_all(Process, Message) ->
 	lists:foreach(fun(Node) -> {Process, Node} ! Message end, nodes()).
 
-reevaluate([], _) ->
+reevaluate([], _, _) ->
 	1.
 
 reevaluate(Orders, WorldViews, OwnID) ->
 	% to be run when a node dies, reevaluates all orders from the
 	% dead node, and adds them to appropriate node. If id returned from
 	% scheduler matches OwnID, the order is added.
-	case Orders == [] of
-		true ->
-			exit("No orders")
-	end,
+	[First|Rest] = Orders,
 	case (scheduler:scheduler(WorldViews, First) == OwnID) of
 		true ->
 			order_manager ! {add, First},
