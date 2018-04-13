@@ -129,9 +129,9 @@ reevaluate(Orders, WorldViews, OwnID) ->
 	end.
 
 moniteur() ->
-	lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end),
+	lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end, nodes()),
 	receive
 		{nodedown, Node} ->
 			update_worldviews ! {died, Node}
-	end.
+	end,
 	moniteur().
