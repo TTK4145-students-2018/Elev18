@@ -22,11 +22,12 @@ init() ->
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
  	erlang:set_cookie(node(), 'Elev18'),
 
- 	%node_center ! {network, init_complete}.
  	spawn(fun() -> listener() end),
  	spawn(fun() -> broadcast() end),
  	spawn(fun() -> distribute_worldview() end),
- 	spawn(fun() -> fetch_worldview([]) end).
+ 	spawn(fun() -> fetch_worldview([]) end),
+
+ 	worldview ! {network, init_complete}.
  	
 
 listener() ->
