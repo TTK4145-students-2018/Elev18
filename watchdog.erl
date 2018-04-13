@@ -34,9 +34,9 @@ watchdog_handler(Watchdogs) ->
 			io:format("wd_handler: fresh dog: ~p~n", [self(), Data]),
 			watchdog_handler([FreshWD|Watchdogs]);
 
-		{WDPID, kick, Data} ->
+		{WDPID, kick, _} ->
 			WDUpdated = lists:delete(WDPID, Watchdogs), %lists:delete(Elem, List)
-			watchdog_handler(WDPID);
+			watchdog_handler(WDUpdated);
 		{WDPID, dead} ->
 			WDUpdated = lists:delete(WDPID, Watchdogs),
 			watchdog_handler(WDUpdated);

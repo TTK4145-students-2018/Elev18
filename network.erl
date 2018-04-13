@@ -24,8 +24,7 @@ init() ->
 
  	spawn(fun() -> listener() end),
  	spawn(fun() -> broadcast() end),
- 	spawn(fun() -> distribute_worldview() end),
- 	spawn(fun() -> fetch_worldview([]) end),
+ 	register(net_worldviews, spawn(fun() -> update_worldviews([]) end)),
 
  	worldview ! {network, init_complete}.
  	
@@ -44,9 +43,7 @@ listener(ReceiveSocket) ->
 			net_adm:ping(Node), % ping node to create a connection
 			io:format("Node connected: ~p~n", [Node]), %debug
 			listener(ReceiveSocket)
-		end.
-
-
+	end.
 
 broadcast() ->
 	{ok, SendSocket} = gen_udp:open(?SEND_PORT, [list, {active, true}, {broadcast, true}]),
@@ -57,27 +54,54 @@ broadcast(SendSocket) ->
 	timer:sleep(2000),
 	broadcast(SendSocket).
 
+update_worldviews(WorldViews) ->
+	receive 
+		{self, wv, WorldView} ->
+			send_to_all(net_worldviews, {other, wv, WorldView}),
+			NewViews = replace_wv(WorldViews, WorldView),
+			update_worldviews(NewViews);
+		{other, wv, WorldView} ->
+			NewViews = replace_wv(WorldViews, WorldView),
+			update_worldviews(NewViews);
+		{died, ID} ->
+			worldview ! {request, wv, net_worldviews},
+			receive {response, wv, WorldView} -> ok end,
+			OwnID = element(1, WorldView),
+			io:format("Node died: ~p~n", [ID]),
+			io:format("distributing orders ~n"),
+			{_, DeadWV} = lists:keysearch(ID, 1, WorldViews),
+			DeadOrders = element(3, DeadWV),
+			NewViews = lists:keydelete(ID, 1, WorldViews),
+			UpdatedViews = reevaluate(DeadOrders, NewViews, OwnID),
+			update_worldviews(UpdatedViews)
+	end.
 
-
-distribute_worldview() ->
-	%worldview ! {request, wv, self()},
- 	receive {wv, Worldview} ->
- 		io:format("Local Worldview received!"),
- 		send_to_all(fetch_worldview, {wv, Worldview}),
- 		distribute_worldview()
- 	after 1000 ->
- 		distribute_worldview()
- 	end.
-
-fetch_worldview(WorldviewList) ->
-	receive {wv, Worldview} ->
-		%list_replace(WorldviewList, Worldview)
-		io:format("Received external worldview")
+replace_wv(WorldViews, WorldView) ->
+	OwnID = element(1, WorldView),
+	case lists:keysearch(OwnID, 1, WorldViews) of
+		{value, _} ->
+			NewViews = lists:keyreplace(OwnID, 1, WorldViews, WorldView);
+		false ->
+			NewViews = WorldViews ++ [WorldView]
 	end,
-	fetch_worldview(WorldviewList).
-
-
+	NewViews.
 
 send_to_all(Process, Message) ->
 	lists:foreach(fun(Node) -> {Process, Node} ! Message end, nodes()).
+
+reevaluate([], _) ->
+	1.
+
+reevaluate(Orders, WorldViews, OwnID) ->
+	% to be run when a node dies, reevaluates all orders from the
+	% dead node, and adds them to appropriate node. If id returned from
+	% scheduler matches OwnID, the order is added.
+	[First|Rest] = Orders,
+	case (scheduler:scheduler(WorldViews, First) == OwnID) of
+		true ->
+			order_manager ! {add, First},
+			reevaluate(Rest, WorldViews, OwnID);
+		false ->
+			reevaluate(Rest, WorldViews, OwnID)
+	end.
 

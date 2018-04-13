@@ -16,7 +16,8 @@ start() ->
 
 
 world(WorldView) ->
-	io:format("current worldview: ~p~n", [WorldView]),
+	net_worldviews ! {self, wv, WorldView},
+	%io:format("current worldview: ~p~n", [WorldView]),
 	receive
 		{state, State} ->
 			NewView = setelement(2, WorldView, State),
