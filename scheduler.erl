@@ -63,7 +63,7 @@ get_distance(WorldView, Order) ->
 	abs(LastFloor - OrderFloor).
 
 order_placement(WorldView, Order) ->
-	Orders = element(1, WorldView),
+	Orders = element(4, WorldView),
 	[First|_] = Orders,
 	case order_manager:ideal_first(First, WorldView, element(1, Order), element(2, Order)) of
 		true -> 1;
