@@ -64,11 +64,9 @@ update_worldviews(WorldViews) ->
 	%io:format("Current worldviews: ~p~n", [WorldViews]),
 	receive 
 		{self, wv, WorldView} ->
-			io:format("Sending local worldview!~n"),
 			send_to_all(update_worldviews, {other, wv, WorldView}),
 			NewViews = replace_wv(WorldViews, WorldView);
 		{other, wv, WorldView} ->
-			io:format("Received external worldview!~n"),
 			NewViews = replace_wv(WorldViews, WorldView);
 		{died, ID} ->
 			worldview ! {request, wv, update_worldviews},
@@ -80,28 +78,16 @@ update_worldviews(WorldViews) ->
 			DeadOrders = element(4, DeadWV),
 			UpdatedViews = lists:keydelete(ID, 1, WorldViews),
 			NewViews = reevaluate(DeadOrders, UpdatedViews, OwnID)
-		%{order, Order} ->
-			%worldview ! {request, wv, update_worldviews},
-			%receive {response, wv, WorldView} -> ok end,
-			%OwnID = element(1, WorldView),
-			%BestID = scheduler:scheduler(WorldViews, Order),
-			%case OwnID == BestID of
-			%	true ->
-			%		order_manager ! {add, Order},
-			%		update_worldviews(WorldViews);
-			%	false ->
-			%		update_worldviews(WorldViews)
-			%end
 	end,
 	order_receiver ! {wv_list, NewViews},
+		order_distributor ! {wv_updated, ok},
 	update_worldviews(NewViews).
 
 order_distributor(Node) ->
 	receive
 		{new, Order} ->
+			receive {wv_updated, ok} -> ok end,
 			send_to_all(order_receiver, {order, Order, Node}),
-			%io:format("Waiting for ack! ~n"),
-			%receive {order, ack} -> ok end,
 			order_receiver ! {order, Order}
 	end,
 	order_distributor(Node).
@@ -157,6 +143,7 @@ replace_wv(WorldViews, WorldView) ->
 
 send_to_all(Process, Message) ->
 	lists:foreach(fun(Node) -> {Process, Node} ! Message end, nodes()).
+
 
 %reevaluate([], _) ->
 %	1.
