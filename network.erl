@@ -91,7 +91,6 @@ update_worldviews(WorldViews) ->
 			%		update_worldviews(WorldViews)
 			%end
 	end,
-	io:format("Sending new worldviews to order_receiver: ~p~n", [NewViews]),
 	order_receiver ! {wv_list, NewViews},
 	update_worldviews(NewViews).
 
@@ -138,9 +137,8 @@ order_receiver(WorldViews) ->
 				false ->
 					order_receiver(WorldViews)
 			end;
-		{wv_list, WorldViews} ->
-			io:format("Updated worldviews in order_receiver: ~p~n", [WorldViews]),
-			order_receiver(WorldViews)
+		{wv_list, NewViews} ->
+			order_receiver(NewViews)	
 	end.
 
 
