@@ -29,7 +29,7 @@ init() ->
  	register(update_worldviews, spawn(fun() -> update_worldviews([]) end)),
  	register(order_distributor, spawn(fun() -> order_distributor(NodeName) end)),
  	register(order_receiver, spawn(fun() -> order_receiver() end)),
- 	spawn(fun() -> moniteur() end),
+ 	spawn(fun() -> moniteur([]) end),
 
  	worldview ! {network, init_complete},
  	node_center ! {network, init_complete}.
@@ -74,19 +74,18 @@ update_worldviews(WorldViews) ->
 			OwnID = element(1, WorldView),
 			io:format("Node died: ~p~n", [ID]),
 			io:format("distributing orders ~n"),
+
 			{_, DeadWV} = lists:keysearch(ID, 1, WorldViews),
 			DeadOrders = element(4, DeadWV),
 			UpdatedViews = lists:keydelete(ID, 1, WorldViews),
 			NewViews = reevaluate(DeadOrders, UpdatedViews, OwnID)
 	end,
 	order_receiver ! {wv_list, NewViews},
-		order_distributor ! {wv_updated, ok},
 	update_worldviews(NewViews).
 
 order_distributor(Node) ->
 	receive
 		{new, Order} ->
-			receive {wv_updated, ok} -> ok end,
 			send_to_all(order_receiver, {order, Order, Node}),
 			order_receiver ! {order, Order}
 	end,
@@ -164,14 +163,32 @@ reevaluate(Orders, WorldViews, OwnID) ->
 			reevaluate(Rest, WorldViews, OwnID)
 	end.
 
+moniteur(MonitorList) ->
+	lists:foreach(fun(Node) ->
+		case lists:member(Node, MonitorList) of
+			true ->
+				case lists:member(Node, nodes()) of
+					false ->
+						NewMonitorList = MonitorList -- [Node];
+					true ->
+						NewMonitorList = MonitorList,
+				moniteur(NewMonitorList)
+				end;
+			false ->
+				NewMonitorList = MonitorList ++ [Node],
+				spawn(fun() -> node_watcher(Node) end),
+				moniteur(NewMonitorList)
+		end
+	end, nodes()).
 
-moniteur() ->
-	lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end, nodes()),
+
+
+
+node_watcher(Node) ->
+	%lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end, nodes()),
+	erlang:monitor_node(Node, true),
 	receive
 		{nodedown, Node} ->
 			io:format("Node down!! ~n"),
-			update_worldviews ! {died, Node},
-			moniteur()
-	after 1000 ->
-		moniteur()
+			update_worldviews ! {died, Node}
 	end.
