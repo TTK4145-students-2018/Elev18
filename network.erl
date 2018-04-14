@@ -107,6 +107,7 @@ order_receiver() ->
 			{order_distributor, Node} ! {order, ack},					%Should this wait for return ack (package loss)
 			worldview ! {request, wv, order_receiver},
 			receive {response, wv, WorldView} -> ok end,
+			driver:set_order_button_light(driver, element(2, Order), element(1, Order), on),
 			OwnID = element(1, WorldView),
 			BestID = scheduler:scheduler(WorldViews, Order),
 			case OwnID == BestID of
@@ -129,9 +130,9 @@ order_receiver() ->
 					order_receiver();
 				false ->
 					order_receiver()
-			end
-		%{wv_list, NewViews} ->
-		%	order_receiver(NewViews)	
+			end;
+		{order, remove, Order} ->
+			driver:set_order_button_light(driver, element(2, Order), element(1, Order), off);	
 	end.
 
 
