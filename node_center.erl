@@ -7,7 +7,7 @@
 %TODO
 
 start() ->
-	register(main_man, self()),
+	register(node_center, self()),
 	%{ok, Port} = io:read("Elevator port: ", "~d"),
 	{ok, DriverPid} = driver:start(),							%{127,0,0,1}, 011095
 	register(driver, DriverPid),

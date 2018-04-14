@@ -31,8 +31,8 @@ init() ->
  	register(order_receiver, spawn(fun() -> order_receiver() end)),
  	spawn(fun() -> moniteur() end),
 
- 	worldview ! {network, init_complete}.
- 	node_center ! {network, init_complete},
+ 	worldview ! {network, init_complete},
+ 	node_center ! {network, init_complete}.
  	
 
 listener() ->
