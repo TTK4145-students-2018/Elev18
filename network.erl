@@ -61,7 +61,7 @@ broadcast(SendSocket) ->
 	broadcast(SendSocket).
 
 update_worldviews(WorldViews) ->
-	io:format("Current worldviews: ~p~n", [WorldViews]),
+	%io:format("Current worldviews: ~p~n", [WorldViews]),
 	receive 
 		{self, wv, WorldView} ->
 			send_to_all(update_worldviews, {other, wv, WorldView}),
@@ -138,6 +138,7 @@ order_receiver(WorldViews) ->
 					order_receiver(WorldViews)
 			end;
 		{wv_list, WorldViews} ->
+			io:format("Updated worldviews in order_receiver: ~p~n", [WorldViews]),
 			order_receiver(WorldViews)
 	end.
 

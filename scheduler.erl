@@ -14,6 +14,7 @@
 % as 0, and that elevator will "take" the order. (order_manager does the rest)
 
 scheduler(WorldViews, Order) ->
+	io:format("WorldViews: ~p~n", [WorldViews]),
 	SortedViews = lists:keysort(1, WorldViews),
 	io:format("SortedViews: ~p~n", [SortedViews]),
 	scheduler(SortedViews, Order, 100).
