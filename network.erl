@@ -20,7 +20,6 @@ init() ->
 
     %[ID|_T] = hf:flip(IPlist),									% uses last part of IP as ID for elevator
     worldview ! {id, NodeName},
-    ebration/0 
  	net_kernel:start([NodeName, longnames, 500]),				% Creates node with heartbeat of 500 milliseconds 
  	erlang:set_cookie(node(), 'Elev18'),
 
