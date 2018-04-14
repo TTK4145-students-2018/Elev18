@@ -97,8 +97,8 @@ order_distributor(Node) ->
 	receive
 		{new, Order} ->
 			send_to_all(order_receiver, {order, Order, Node}),
-			receive {order, ack} -> ok end,
-			order_distributor ! {order, Order, Node}
+			%receive {order, ack} -> ok end,
+			order_receiver ! {order, Order, Node}
 	end,
 	order_distributor(Node).
 
@@ -112,7 +112,7 @@ order_receiver(WorldViews) ->
 	receive
 		{order, Order, Node} ->
 			{order_distributor, Node} ! {order, ack},					%Should this wait for return ack (package loss)
-			worldview ! {request, wv, update_worldviews},
+			worldview ! {request, wv, order_receiver},
 			receive {response, wv, WorldView} -> ok end,
 			OwnID = element(1, WorldView),
 			BestID = scheduler:scheduler(WorldViews, Order),
@@ -142,8 +142,8 @@ replace_wv(WorldViews, WorldView) ->
 send_to_all(Process, Message) ->
 	lists:foreach(fun(Node) -> {Process, Node} ! Message end, nodes()).
 
-reevaluate([], _) ->
-	1.
+%reevaluate([], _) ->
+%	1.
 
 reevaluate(Orders, WorldViews, OwnID) ->
 	% to be run when a node dies, reevaluates all orders from the
