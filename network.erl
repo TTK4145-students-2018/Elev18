@@ -78,11 +78,11 @@ update_worldviews(WorldViews) ->
 			{_, DeadWV} = lists:keysearch(ID, 1, WorldViews),
 			DeadOrders = element(4, DeadWV),
 			UpdatedViews = lists:keydelete(ID, 1, WorldViews),
-			NewViews = reevaluate(DeadOrders, UpdatedViews, OwnID)
+			NewViews = reevaluate(DeadOrders, UpdatedViews, OwnID);
 		{request, wvs, Pid} ->
-			Pid ! {response, WorldViews}
+			NewViews = WorldViews,
+			Pid ! {response, WorldViews}			
 	end,
-	order_receiver ! {wv_list, NewViews},
 	update_worldviews(NewViews).
 
 order_distributor(Node) ->
@@ -92,12 +92,6 @@ order_distributor(Node) ->
 			order_receiver ! {order, Order}
 	end,
 	order_distributor(Node).
-
-order_receiver() ->
-	receive
-		{wv_list, WorldViews} ->
-			order_receiver(WorldViews)
-	end.
 
 order_receiver() ->
 	receive
@@ -132,7 +126,7 @@ order_receiver() ->
 					order_receiver()
 			end;
 		{order, remove, Order} ->
-			driver:set_order_button_light(driver, element(2, Order), element(1, Order), off);	
+			driver:set_order_button_light(driver, element(2, Order), element(1, Order), off)	
 	end.
 
 
