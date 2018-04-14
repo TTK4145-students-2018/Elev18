@@ -79,6 +79,8 @@ update_worldviews(WorldViews) ->
 			DeadOrders = element(4, DeadWV),
 			UpdatedViews = lists:keydelete(ID, 1, WorldViews),
 			NewViews = reevaluate(DeadOrders, UpdatedViews, OwnID)
+		{request, wvs, Pid} ->
+			Pid ! {response, WorldViews}
 	end,
 	order_receiver ! {wv_list, NewViews},
 	update_worldviews(NewViews).
@@ -97,9 +99,11 @@ order_receiver() ->
 			order_receiver(WorldViews)
 	end.
 
-order_receiver(WorldViews) ->
+order_receiver() ->
 	receive
 		{order, Order, Node} ->
+			update_worldviews ! {request, wvs, self()},
+			receive {response, WorldViews} -> ok end,
 			{order_distributor, Node} ! {order, ack},					%Should this wait for return ack (package loss)
 			worldview ! {request, wv, order_receiver},
 			receive {response, wv, WorldView} -> ok end,
@@ -108,11 +112,13 @@ order_receiver(WorldViews) ->
 			case OwnID == BestID of
 				true ->
 					order_manager ! {add, Order},
-					order_receiver(WorldViews);
+					order_receiver();
 				false ->
-					order_receiver(WorldViews)
+					order_receiver()
 			end;
 		{order, Order} ->
+			update_worldviews ! {request, wvs, self()},
+			receive {response, WorldViews} -> ok end,
 			worldview ! {request, wv, order_receiver},
 			receive {response, wv, WorldView} -> ok end,
 			OwnID = element(1, WorldView),
@@ -120,12 +126,12 @@ order_receiver(WorldViews) ->
 			case OwnID == BestID of
 				true ->
 					order_manager ! {add, Order},
-					order_receiver(WorldViews);
+					order_receiver();
 				false ->
-					order_receiver(WorldViews)
-			end;
-		{wv_list, NewViews} ->
-			order_receiver(NewViews)	
+					order_receiver()
+			end
+		%{wv_list, NewViews} ->
+		%	order_receiver(NewViews)	
 	end.
 
 
