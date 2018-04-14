@@ -59,6 +59,7 @@ get_distance(WorldView, Order) ->
 	% returns distance between current distance and order
 	% floor. Currently regardless of the direction the elevator
 	% must travel before taking it.
+	io:format("get_distance: order ~p~n", Order),
 	LastFloor = element(3, WorldView),
 	OrderFloor = element(1, Order),
 	abs(LastFloor - OrderFloor).
