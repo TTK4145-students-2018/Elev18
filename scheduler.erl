@@ -77,4 +77,10 @@ order_placement(WorldView, Order) ->
 	end.
 
 
-
+% direction_change(WorldView, Order) ->
+% 	OrderDir = element(2, Order),
+% 	Orders = element(4, WorldView),
+% 	lists:foreach(fun(Existing) ->
+% 		ExistingDir = element(2, Existing),
+% 		case ((ExistingDir == ))
+% 	end, Orders).
