@@ -64,10 +64,12 @@ update_worldviews(WorldViews) ->
 	%io:format("Current worldviews: ~p~n", [WorldViews]),
 	receive 
 		{self, wv, WorldView} ->
+			io:format("Sharing worldview!~n"),
 			send_to_all(update_worldviews, {other, wv, WorldView}),
 			NewViews = replace_wv(WorldViews, WorldView);
 		{other, wv, WorldView} ->
-			NewViews = replace_wv(WorldViews, WorldView);
+			NewViews = replace_wv(WorldViews, WorldView),
+			io:format("Received external worldview, NewViews: ~p~n", [NewViews]);
 		{died, ID} ->
 			worldview ! {request, wv, update_worldviews},
 			receive {response, wv, WorldView} -> ok end,
