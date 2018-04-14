@@ -28,7 +28,7 @@ init() ->
  	register(update_worldviews, spawn(fun() -> update_worldviews([]) end)),
  	register(order_distributor, spawn(fun() -> order_distributor(NodeName) end)),
  	register(order_receiver, spawn(fun() -> order_receiver() end)),
- 	spawn(fun() -> moniteur([]) end),
+ 	%spawn(fun() -> moniteur([]) end),
 
  	worldview ! {network, init_complete},
  	node_center ! {network, init_complete}.
