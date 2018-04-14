@@ -97,7 +97,6 @@ order_receiver() ->
 		{order, Order, Node} ->
 			update_worldviews ! {request, wvs, self()},
 			receive {response, WorldViews} -> ok end,
-			{order_distributor, Node} ! {order, ack},					%Should this wait for return ack (package loss)
 			worldview ! {request, wv, order_receiver},
 			receive {response, wv, WorldView} -> ok end,
 			driver:set_order_button_light(driver, element(2, Order), element(1, Order), on),
