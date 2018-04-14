@@ -14,6 +14,8 @@ start() ->
 	register(worldview, spawn(fun worldview:start/0)),
 	register(network, spawn(fun network:start/0)),
 	
+
+
 	receive {network, init_complete} -> ok end,
 			
 	register(event_manager, spawn(fun event_manager:start/0)),

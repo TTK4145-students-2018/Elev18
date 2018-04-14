@@ -172,12 +172,15 @@ moniteur(MonitorList) ->
 			true ->
 				case lists:member(Node, nodes()) of
 					false ->
+						io:format("Removing node from monitorlist~n"),
 						NewMonitorList = MonitorList -- [Node];
 					true ->
+						io:format("Nothing to report from moniteur~n"),
 						NewMonitorList = MonitorList,
 				moniteur(NewMonitorList)
 				end;
 			false ->
+				io:format("Adding node to monitorlist~n"),
 				NewMonitorList = MonitorList ++ [Node],
 				spawn(fun() -> node_watcher(Node) end),
 				moniteur(NewMonitorList)
@@ -189,6 +192,7 @@ moniteur(MonitorList) ->
 
 node_watcher(Node) ->
 	%lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end, nodes()),
+	io:format("I will now monitor: ~p~n", [Node]),
 	erlang:monitor_node(Node, true),
 	receive
 		{nodedown, Node} ->
