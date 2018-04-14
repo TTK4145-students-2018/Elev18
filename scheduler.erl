@@ -76,7 +76,6 @@ order_placement(WorldView, Order) ->
 			end
 	end.
 
-
 % direction_change(WorldView, Order) ->
 % 	OrderDir = element(2, Order),
 % 	Orders = element(4, WorldView),
