@@ -1,12 +1,14 @@
 Turn on lamps on all elevators
 Extra cost for change in direction
-Not steal cab orders, maybe not go through network?
+Don't transfer cab orders when node dies. Write to file?
+Make code sexy
 
 General message flow
 	Acks for order passing
 	Acks for order accept
 
 Moniteur
+	Restart moniteur after restarting node
 
 Watchdog implement
 
@@ -15,10 +17,3 @@ What do we do if the elevator is stuck?
 
 Bug report
 *Orders made during init are not completed  (watchdog will probably fix)
-*When elevators are on the same floor, they sometimes both take the order (might have to do with nodenameid)
-
-
-Debugging right now (* = under work)
-SortedViews in scheduler does not include other nodes
-Worldviews in order_receiver does not include other nodes
-*Due to concurrency, worldviews is not updated in time for first buttonpress
