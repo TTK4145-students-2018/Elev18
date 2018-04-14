@@ -61,7 +61,6 @@ broadcast(SendSocket) ->
 	broadcast(SendSocket).
 
 update_worldviews(WorldViews) ->
-	%io:format("Current worldviews: ~p~n", [WorldViews]),
 	receive 
 		{self, wv, WorldView} ->
 			send_to_all(update_worldviews, {other, wv, WorldView}),
@@ -145,9 +144,6 @@ send_to_all(Process, Message) ->
 	lists:foreach(fun(Node) -> {Process, Node} ! Message end, nodes()).
 
 
-%reevaluate([], _) ->
-%	1.
-
 reevaluate([], WorldViews, OwnID) ->
 	WorldViews;
 
@@ -164,30 +160,7 @@ reevaluate(Orders, WorldViews, OwnID) ->
 			reevaluate(Rest, WorldViews, OwnID)
 	end.
 
-%moniteur(MonitorList) ->
-%	lists:foreach(fun(Node) ->
-%		case lists:member(Node, MonitorList) of
-%			true ->
-%				case lists:member(Node, [node()|nodes()]) of
-%					false ->
-%						io:format("Removing node from monitorlist~n"),
-%						NewMonitorList = MonitorList -- [Node];
-%					true ->
-%						io:format("Nothing to report from moniteur~n"),
-%						NewMonitorList = MonitorList,
-%				moniteur(NewMonitorList)
-%				end;
-%			false ->
-%				io:format("Adding node to monitorlist~n"),
-%				NewMonitorList = MonitorList ++ [Node],
-%				spawn(fun() -> node_watcher(Node) end),
-%				moniteur(NewMonitorList)
-%		end
-	%end, nodes()).
-
-
 node_watcher(Node) ->
-	%lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end, nodes()),
 	io:format("I will now monitor: ~p~n", [Node]),
 	erlang:monitor_node(Node, true),
 	receive
