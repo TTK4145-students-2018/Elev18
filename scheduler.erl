@@ -77,4 +77,4 @@ order_placement(WorldView, Order) ->
 	end.
 
 
-
+	

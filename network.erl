@@ -47,6 +47,7 @@ listener(ReceiveSocket) ->
 		false ->
 			net_adm:ping(Node), % ping node to create a connection
 			io:format("Node connected: ~p~n", [Node]), %debug
+			spawn(fun() -> node_watcher(Node) end),
 			listener(ReceiveSocket)
 	end.
 
@@ -163,28 +164,26 @@ reevaluate(Orders, WorldViews, OwnID) ->
 			reevaluate(Rest, WorldViews, OwnID)
 	end.
 
-moniteur(MonitorList) ->
-	lists:foreach(fun(Node) ->
-		case lists:member(Node, MonitorList) of
-			true ->
-				case lists:member(Node, nodes()) of
-					false ->
-						io:format("Removing node from monitorlist~n"),
-						NewMonitorList = MonitorList -- [Node];
-					true ->
-						io:format("Nothing to report from moniteur~n"),
-						NewMonitorList = MonitorList,
-				moniteur(NewMonitorList)
-				end;
-			false ->
-				io:format("Adding node to monitorlist~n"),
-				NewMonitorList = MonitorList ++ [Node],
-				spawn(fun() -> node_watcher(Node) end),
-				moniteur(NewMonitorList)
-		end
-	end, nodes()).
-
-
+%moniteur(MonitorList) ->
+%	lists:foreach(fun(Node) ->
+%		case lists:member(Node, MonitorList) of
+%			true ->
+%				case lists:member(Node, [node()|nodes()]) of
+%					false ->
+%						io:format("Removing node from monitorlist~n"),
+%						NewMonitorList = MonitorList -- [Node];
+%					true ->
+%						io:format("Nothing to report from moniteur~n"),
+%						NewMonitorList = MonitorList,
+%				moniteur(NewMonitorList)
+%				end;
+%			false ->
+%				io:format("Adding node to monitorlist~n"),
+%				NewMonitorList = MonitorList ++ [Node],
+%				spawn(fun() -> node_watcher(Node) end),
+%				moniteur(NewMonitorList)
+%		end
+	%end, nodes()).
 
 
 node_watcher(Node) ->
