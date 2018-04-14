@@ -32,6 +32,7 @@ init() ->
  	spawn(fun() -> moniteur() end),
 
  	worldview ! {network, init_complete}.
+ 	node_center ! {network, init_complete},
  	
 
 listener() ->
