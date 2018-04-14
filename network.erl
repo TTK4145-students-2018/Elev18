@@ -4,6 +4,8 @@
 -define(RECV_PORT, 7565).
 -define(SEND_PORT, 7479).
 
+-define(TIMEOUT, 100).
+
 start() ->
 	init().
 
@@ -25,7 +27,8 @@ init() ->
  	spawn(fun() -> listener() end),
  	spawn(fun() -> broadcast() end),
  	register(update_worldviews, spawn(fun() -> update_worldviews([]) end)),
- 	register(order_distributor, spawn(fun order_distributor/0)),
+ 	register(order_distributor, spawn(fun() -> order_distributor(NodeName) end)),
+ 	register(order_receiver, spawn(fun() -> order_receiver() end)),
  	spawn(fun() -> moniteur() end),
 
  	worldview ! {network, init_complete}.
@@ -61,11 +64,9 @@ update_worldviews(WorldViews) ->
 	receive 
 		{self, wv, WorldView} ->
 			send_to_all(update_worldviews, {other, wv, WorldView}),
-			NewViews = replace_wv(WorldViews, WorldView),
-			update_worldviews(NewViews);
+			NewViews = replace_wv(WorldViews, WorldView);
 		{other, wv, WorldView} ->
-			NewViews = replace_wv(WorldViews, WorldView),
-			update_worldviews(NewViews);
+			NewViews = replace_wv(WorldViews, WorldView);
 		{died, ID} ->
 			worldview ! {request, wv, update_worldviews},
 			receive {response, wv, WorldView} -> ok end,
@@ -73,14 +74,44 @@ update_worldviews(WorldViews) ->
 			io:format("Node died: ~p~n", [ID]),
 			io:format("distributing orders ~n"),
 			{_, DeadWV} = lists:keysearch(ID, 1, WorldViews),
-			io:format("DeadWV: ~p~n", [DeadWV]),
 			DeadOrders = element(4, DeadWV),
-			io:format("DeadOrders: ~p~n", [DeadOrders]),
-			NewViews = lists:keydelete(ID, 1, WorldViews),
-			io:format("NewViews: ~p~n", [NewViews]),
-			UpdatedViews = reevaluate(DeadOrders, NewViews, OwnID),
-			update_worldviews(UpdatedViews);
-		{order, Order} ->
+			UpdatedViews = lists:keydelete(ID, 1, WorldViews),
+			NewViews = reevaluate(DeadOrders, UpdatedViews, OwnID)
+		%{order, Order} ->
+			%worldview ! {request, wv, update_worldviews},
+			%receive {response, wv, WorldView} -> ok end,
+			%OwnID = element(1, WorldView),
+			%BestID = scheduler:scheduler(WorldViews, Order),
+			%case OwnID == BestID of
+			%	true ->
+			%		order_manager ! {add, Order},
+			%		update_worldviews(WorldViews);
+			%	false ->
+			%		update_worldviews(WorldViews)
+			%end
+	end,
+	order_receiver ! {wv_list, NewViews},
+	update_worldviews(NewViews).
+
+order_distributor(Node) ->
+	receive
+		{new, Order} ->
+			send_to_all(order_receiver, {order, Order, Node}),
+			receive {order, ack} -> ok end,
+			order_distributor ! {order, Order, Node}
+	end,
+	order_distributor(Node).
+
+order_receiver() ->
+	receive
+		{wv_list, WorldViews} ->
+			order_receiver(WorldViews)
+	end.
+
+order_receiver(WorldViews) ->
+	receive
+		{order, Order, Node} ->
+			{order_distributor, Node} ! {order, ack},					%Should this wait for return ack (package loss)
 			worldview ! {request, wv, update_worldviews},
 			receive {response, wv, WorldView} -> ok end,
 			OwnID = element(1, WorldView),
@@ -88,19 +119,15 @@ update_worldviews(WorldViews) ->
 			case OwnID == BestID of
 				true ->
 					order_manager ! {add, Order},
-					update_worldviews(WorldViews);
+					order_receiver(WorldViews);
 				false ->
-					update_worldviews(WorldViews)
-			end
+					order_receiver(WorldViews)
+			end;
+		{wv_list, WorldViews} ->
+			order_receiver(WorldViews)
 	end.
 
-order_distributor() ->
-	receive
-		{new, Order} ->
-			send_to_all(update_worldviews, {order, Order}),
-			update_worldviews ! {order, Order}
-	end,
-	order_distributor().
+
 
 replace_wv(WorldViews, WorldView) ->
 	OwnID = element(1, WorldView),
@@ -115,8 +142,8 @@ replace_wv(WorldViews, WorldView) ->
 send_to_all(Process, Message) ->
 	lists:foreach(fun(Node) -> {Process, Node} ! Message end, nodes()).
 
-reevaluate([], _, _) ->
-	1;
+reevaluate([], _) ->
+	1.
 
 reevaluate(Orders, WorldViews, OwnID) ->
 	% to be run when a node dies, reevaluates all orders from the
