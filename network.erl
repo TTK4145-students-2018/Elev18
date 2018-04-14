@@ -64,12 +64,10 @@ update_worldviews(WorldViews) ->
 	%io:format("Current worldviews: ~p~n", [WorldViews]),
 	receive 
 		{self, wv, WorldView} ->
-			io:format("Sharing worldview!~n"),
 			send_to_all(update_worldviews, {other, wv, WorldView}),
 			NewViews = replace_wv(WorldViews, WorldView);
 		{other, wv, WorldView} ->
-			NewViews = replace_wv(WorldViews, WorldView),
-			io:format("Received external worldview, NewViews: ~p~n", [NewViews]);
+			NewViews = replace_wv(WorldViews, WorldView);
 		{died, ID} ->
 			worldview ! {request, wv, update_worldviews},
 			receive {response, wv, WorldView} -> ok end,
@@ -93,6 +91,7 @@ update_worldviews(WorldViews) ->
 			%		update_worldviews(WorldViews)
 			%end
 	end,
+	io:format("Sending new worldviews to order_receiver: ~p~n", [NewViews]),
 	order_receiver ! {wv_list, NewViews},
 	update_worldviews(NewViews).
 
@@ -162,6 +161,9 @@ send_to_all(Process, Message) ->
 %reevaluate([], _) ->
 %	1.
 
+reevaluate([], WorldViews, OwnID) ->
+	WorldViews;
+
 reevaluate(Orders, WorldViews, OwnID) ->
 	% to be run when a node dies, reevaluates all orders from the
 	% dead node, and adds them to appropriate node. If id returned from
@@ -174,6 +176,7 @@ reevaluate(Orders, WorldViews, OwnID) ->
 		false ->
 			reevaluate(Rest, WorldViews, OwnID)
 	end.
+
 
 moniteur() ->
 	lists:foreach(fun(Node) -> erlang:monitor_node(Node, true) end, nodes()),
