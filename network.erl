@@ -99,7 +99,6 @@ order_receiver() ->
 			receive {response, WorldViews} -> ok end,
 			worldview ! {request, wv, order_receiver},
 			receive {response, wv, WorldView} -> ok end,
-			driver:set_order_button_light(driver, element(2, Order), element(1, Order), on),
 			OwnID = element(1, WorldView),
 			BestID = scheduler:scheduler(WorldViews, Order),
 			case OwnID == BestID of
@@ -107,6 +106,7 @@ order_receiver() ->
 					order_manager ! {add, Order},
 					order_receiver();
 				false ->
+					driver:set_order_button_light(driver, element(2, Order), element(1, Order), on),
 					order_receiver()
 			end;
 		{order, Order} ->
