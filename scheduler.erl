@@ -15,6 +15,7 @@
 
 scheduler(WorldViews, Order) ->
 	SortedViews = lists:keysort(1, WorldViews),
+	io:format("SortedViews: ~p~n", [SortedViews]),
 	scheduler(SortedViews, Order, 100).
 
 scheduler([], _, _) ->

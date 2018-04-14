@@ -98,8 +98,8 @@ order_distributor(Node) ->
 	receive
 		{new, Order} ->
 			send_to_all(order_receiver, {order, Order, Node}),
-			%receive {order, ack} -> ok end,
-			order_receiver ! {order, Order, Node}
+			receive {order, ack} -> ok end,
+			order_receiver ! {order, Order}
 	end,
 	order_distributor(Node).
 
@@ -113,6 +113,18 @@ order_receiver(WorldViews) ->
 	receive
 		{order, Order, Node} ->
 			{order_distributor, Node} ! {order, ack},					%Should this wait for return ack (package loss)
+			worldview ! {request, wv, order_receiver},
+			receive {response, wv, WorldView} -> ok end,
+			OwnID = element(1, WorldView),
+			BestID = scheduler:scheduler(WorldViews, Order),
+			case OwnID == BestID of
+				true ->
+					order_manager ! {add, Order},
+					order_receiver(WorldViews);
+				false ->
+					order_receiver(WorldViews)
+			end;
+		{order, Order} ->
 			worldview ! {request, wv, order_receiver},
 			receive {response, wv, WorldView} -> ok end,
 			OwnID = element(1, WorldView),
