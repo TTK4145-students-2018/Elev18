@@ -76,6 +76,7 @@ remove_order(Orders, Floor) ->
 			OrderFloor = element(1, First),
 			OrderDir = element(2, First),
 			driver:set_order_button_light(driver, OrderDir, OrderFloor, off),
+			network:send_to_all(order_receiver, {order, remove, First}),
 			NewOrders = lists:keydelete(Floor, 1, Orders),
 			remove_order(NewOrders, Floor);
 		false ->
