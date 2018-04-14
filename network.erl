@@ -98,7 +98,8 @@ order_distributor(Node) ->
 	receive
 		{new, Order} ->
 			send_to_all(order_receiver, {order, Order, Node}),
-			receive {order, ack} -> ok end,
+			%io:format("Waiting for ack! ~n"),
+			%receive {order, ack} -> ok end,
 			order_receiver ! {order, Order}
 	end,
 	order_distributor(Node).
