@@ -94,6 +94,8 @@ order_distributor(Node) ->
 
 order_receiver() ->
 	receive
+		{order, remove, Order} ->
+			driver:set_order_button_light(driver, element(2, Order), element(1, Order), off);
 		{order, Order, Node} ->
 			update_worldviews ! {request, wvs, self()},
 			receive {response, WorldViews} -> ok end,
@@ -122,9 +124,7 @@ order_receiver() ->
 					order_receiver();
 				false ->
 					order_receiver()
-			end;
-		{order, remove, Order} ->
-			driver:set_order_button_light(driver, element(2, Order), element(1, Order), off)	
+			end
 	end.
 
 
