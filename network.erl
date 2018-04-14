@@ -62,7 +62,6 @@ broadcast(SendSocket) ->
 
 update_worldviews(WorldViews) ->
 	%io:format("Current worldviews: ~p~n", [WorldViews]),
-	order_receiver ! {wv_list, WorldViews},
 	receive 
 		{self, wv, WorldView} ->
 			io:format("Sending local worldview!~n"),
@@ -94,6 +93,7 @@ update_worldviews(WorldViews) ->
 			%		update_worldviews(WorldViews)
 			%end
 	end,
+	order_receiver ! {wv_list, NewViews},
 	update_worldviews(NewViews).
 
 order_distributor(Node) ->
