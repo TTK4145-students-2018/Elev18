@@ -74,10 +74,16 @@ update_worldviews(WorldViews) ->
 			io:format("Node died: ~p~n", [ID]),
 			io:format("distributing orders ~n"),
 
-			{_, DeadWV} = lists:keysearch(ID, 1, WorldViews),
-			DeadOrders = element(4, DeadWV),
-			UpdatedViews = lists:keydelete(ID, 1, WorldViews),
-			NewViews = reevaluate(DeadOrders, UpdatedViews, OwnID);
+			Died = lists:keysearch(ID, 1, WorldViews),
+			case Died == false of
+				true ->
+					NewViews = WorldViews;
+				false ->
+					{_, DeadWV} = Died,
+					DeadOrders = element(4, DeadWV),
+					UpdatedViews = lists:keydelete(ID, 1, WorldViews),
+					NewViews = reevaluate(DeadOrders, UpdatedViews, OwnID)
+			end;
 		{request, wvs, Pid} ->
 			NewViews = WorldViews,
 			Pid ! {response, WorldViews}			
