@@ -9,9 +9,12 @@
 % Number of orders currently taken
 % Absolute distance from current position to the floor of the order
 % Placement of the new order (relative to the other orders)
+% Whether the new order would cause a new change in direction
 
 % If the order already exists in a worldview, its cost will be returned
 % as 0, and that elevator will "take" the order. (order_manager does the rest)
+% If the worldview is in state init, the cost will be significantly increased,
+% causing another elevator to take the order.
 
 scheduler(WorldViews, Order) ->
 	io:format("WorldViews: ~p~n", [WorldViews]),
@@ -114,4 +117,3 @@ direction_change(WorldView, Order) ->
  		false ->
  			0
  	end.
-
