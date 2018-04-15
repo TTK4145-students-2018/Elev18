@@ -1,5 +1,5 @@
 -module(scheduler).
--compile(export_all).
+-export([scheduler/2]).
 
 % Evaluates cost for a list of worldviews to accept an order. Returns the ID
 % of the elevator that results in the lowest cost. Deterministic, so will return

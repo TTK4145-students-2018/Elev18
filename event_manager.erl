@@ -1,10 +1,8 @@
 -module(event_manager).
 
--compile(export_all).
+-export([start/0]).
 
 -define(DELAY, 100).
-
-%-export([start/0]).
 
 % Poller of our system, currently listening for order-button-presses of all
 % types in all floors, as well as floor sensor. Sends information to fsm and
@@ -19,7 +17,6 @@ start() ->
 
 floor_sensor_poller(LastState) ->
 	SensorState = driver:get_floor_sensor_state(driver),
-	%io:format("SensorState: ~p~n", [SensorState]),
 	case SensorState of
 		between_floors ->
 			case SensorState =:= LastState of
@@ -27,7 +24,6 @@ floor_sensor_poller(LastState) ->
 					floor_sensor_poller(SensorState);
 				false ->
 					worldview ! {floor, between_floors},
-					%timer:sleep(?DELAY),
 					floor_sensor_poller(SensorState)
 			end;
 		_ ->
@@ -38,7 +34,6 @@ floor_sensor_poller(LastState) ->
 					fsm ! {ev_floor_reached, SensorState},
 					worldview ! {floor, SensorState},
 					driver:set_floor_indicator(driver, SensorState),
-					%io:format("SensorState: ~p~n", [SensorState]),
 					timer:sleep(?DELAY),
 					floor_sensor_poller(SensorState)
 			end

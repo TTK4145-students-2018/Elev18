@@ -1,5 +1,3 @@
-Turn on lamps on all elevators
-Extra cost for change in direction
 Don't transfer cab orders when node dies. Write to file?
 Make code sexy
 
@@ -7,13 +5,8 @@ General message flow
 	Acks for order passing
 	Acks for order accept
 
-Moniteur
-	Restart moniteur after restarting node
-
 Watchdog implement
 
 What do we do if the elevator is stuck?
 
-
 Bug report
-*Orders made during init are not completed  (watchdog will probably fix)

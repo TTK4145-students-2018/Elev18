@@ -1,5 +1,5 @@
 -module(worldview).
--compile(export_all).
+-export([start/0, get_direction/1]).
 
 %WorldView = {ID, state, last_floor, orders, direction}
 %ID from the get-go
