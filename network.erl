@@ -113,6 +113,7 @@ order_receiver() ->
 			case OwnID == BestID of
 				true ->
 					order_manager ! {add, Order},
+					driver:set_order_button_light(driver, element(2, Order), element(1, Order), on),
 					order_receiver();
 				false ->
 					driver:set_order_button_light(driver, element(2, Order), element(1, Order), on),
