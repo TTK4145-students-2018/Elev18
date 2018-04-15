@@ -1,5 +1,5 @@
 -module(order_manager).
--export([find_position/3, ideal_first/4, ideal/4]).
+-export([start/0, find_position/3, ideal_first/4, ideal/4]).
 
 start() ->
 	order_manager([]).
