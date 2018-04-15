@@ -104,7 +104,9 @@ direction_change(WorldView, Order) ->
  		hall_down ->
  			Other = hall_up;
  		hall_up ->
- 			Other = hall_down
+ 			Other = hall_down;
+ 		cab ->
+ 			Other = arbitrary
  	end,
  	case lists:keymember(Other, 2, Orders) of
  		true ->
