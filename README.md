@@ -9,6 +9,6 @@ $bash compile.sh
 2. In a new terminal, run
 $ElevatorServer
 once for every node you wish to create.
-3. To start the system, go to the erlang terminal
+3. To start a node, go to the erlang terminal
 the bash script started, and run
 $node_center:start().
