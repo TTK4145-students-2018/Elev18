@@ -10,7 +10,7 @@
 
 start() ->
 	receive {id, ID} -> ok end,
-	WorldView = {ID, idle, 0, [], stop},
+	WorldView = {ID, init, 0, [], stop},
 	receive {network, init_complete} -> ok end,
 	world(WorldView).
 

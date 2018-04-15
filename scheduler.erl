@@ -41,7 +41,9 @@ get_cost(WorldView, Order) ->
 	Dist = get_distance(WorldView, Order),
 	Place = order_placement(WorldView, Order),
 	Mem = member(WorldView, Order),
-	Mem * (Num/2 + Place + Dist). %/2 is kinda arbitrary and very tunable
+	Init = init(WorldView),
+	Dir = direction_change(WorldView, Order),
+	Mem * (Num/2 + Place + Dist + 10*Init + 4*Dir).
 
 member(WorldView, Order) ->
 	%returns 0 if Order already exists in WorldView
@@ -76,10 +78,40 @@ order_placement(WorldView, Order) ->
 			end
 	end.
 
-% direction_change(WorldView, Order) ->
-% 	OrderDir = element(2, Order),
-% 	Orders = element(4, WorldView),
-% 	lists:foreach(fun(Existing) ->
-% 		ExistingDir = element(2, Existing),
-% 		case ((ExistingDir == ))
-% 	end, Orders).
+init(WorldView) ->
+	% returns 1 if the node is in the init state.
+	% elevator should not take an order during this
+	% state, as not all processes are running yet.
+	State = element(2, WorldView),
+	case State == init of
+		true ->
+			1;
+		false ->
+			0
+	end.
+
+direction_change(WorldView, Order) ->
+	% penalizes adding a new direction for the first time.
+	% i.e. if there are only hall_up and cab-orders, adding
+	% hall_down will be penalized. If both directions are 
+	% represented, it will no longer be penalized.
+ 	OrderDir = element(2, Order),
+ 	Orders = element(4, WorldView),
+ 	case OrderDir of
+ 		hall_down ->
+ 			Other = hall_up;
+ 		hall_up ->
+ 			Other = hall_down
+ 	end,
+ 	case lists:keymember(Other, 2, Orders) of
+ 		true ->
+ 			case lists:keymember(OrderDir, 2, Orders) of
+ 				true ->
+ 					0;
+ 				false ->
+ 					1
+ 			end;
+ 		false ->
+ 			0
+ 	end.
+
