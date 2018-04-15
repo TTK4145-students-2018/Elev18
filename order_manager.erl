@@ -97,14 +97,17 @@ ideal_first(NextOrder, WorldView, OrderFloor, OrderDir) ->
 	% can do the order before the initial first order
 	Position = element(3, WorldView),
 	NextFloor = element(1, NextOrder),
+	NextDir = element(2, NextOrder),
 	Between = ((OrderFloor > Position) and (OrderFloor < NextFloor)) or 
 	((OrderFloor < Position) and (OrderFloor > NextFloor)),
 	Cab = ((NextFloor == OrderFloor) and (OrderDir == cab)),
+	Down = ((NextDir == hall_down) and (OrderDir == hall_down) and (OrderFloor > NextFloor)),
+	Up = ((NextDir == hall_up) and (OrderDir == hall_up) and (OrderFloor < NextFloor)),
 	case Position < NextFloor of
 		true -> Dir = hall_up;
 		false -> Dir = hall_down
 	end,
-	(Between and ((OrderDir == Dir) or (OrderDir == cab))) or Cab.
+	(Between and ((OrderDir == Dir) or (OrderDir == cab))) or Cab or Down or Up.
 
 ideal(PrevOrder, NextOrder, OrderFloor, hall_down) ->
 	% returns true if position between prevorder and nextorder is gucci

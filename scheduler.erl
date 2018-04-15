@@ -43,7 +43,7 @@ get_cost(WorldView, Order) ->
 	Mem = member(WorldView, Order),
 	Init = init(WorldView),
 	Dir = direction_change(WorldView, Order),
-	Mem * (Num/2 + Place + Dist + 10*Init + 4*Dir).
+	Mem * (Num/2 + Place + Dist + 10*Init + 2*Dir).
 
 member(WorldView, Order) ->
 	%returns 0 if Order already exists in WorldView
