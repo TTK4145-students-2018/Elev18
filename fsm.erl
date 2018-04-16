@@ -17,7 +17,6 @@ st_init() ->
 			driver:set_motor_direction(driver, stop),
 			st_idle();
 		Other ->
-			io:format("fsm_init: received garbage: ~p~n", [Other]),
 			st_init()
 
 	after 10000 ->
@@ -25,21 +24,16 @@ st_init() ->
 		st_init()
 	end.
 
-
 st_idle() ->
 	worldview ! {state, idle},
 	receive 
 		{ev_new_order} ->
 			st_moving();
 
-		{ev_emergency_stop} ->
-			st_emergency();
-
 		{no_orders} ->
 			st_idle();
 
 		Other ->
-			io:format("fsm_idle: received garbage: ~p~n", [Other]),
 			st_idle()
 	end.
 
@@ -50,6 +44,7 @@ st_moving() ->
 	receive {response, direction, Direction} -> ok end,
 	driver:set_motor_direction(driver, Direction),
 	worldview ! {direction, Direction},
+
 	worldview ! {request, wv, fsm},
 	receive {response, wv, WorldView} -> ok end,
 	[Dest|_] = element(4, WorldView),
@@ -72,11 +67,7 @@ st_moving() ->
 					st_moving()
 			end;
 
-		{ev_emergency_stop} ->
-			st_emergency();
-
 		Other ->
-			io:format("fsm_moving: received garbage: ~p~n", [Other]),
 			st_moving()
 	end.
 
@@ -84,6 +75,7 @@ st_doors_open() ->
 	io:format("fsm: doors opened ~n"),
 	worldview ! {state, doors_open},
 	driver:set_door_open_light(driver, on),
+
 	receive
 	after 2000 ->
 		driver:set_door_open_light(driver, off),
@@ -95,22 +87,4 @@ st_doors_open() ->
 			{no_orders} ->
 				st_idle()
 		end
-	end.
-
-st_emergency() ->
-	io:format("fsm: emergency state activated ~n"),
-	worldview ! {state, emergency},
-	driver:set_motor_direction(driver, stop),
-	driver:set_stop_button_light(driver, on),
-	order_manager ! {clear},
-	receive
-		{ev_new_order} ->
-			st_moving();
-
-		{ev_emergency_stop} ->
-			st_emergency();
-
-		Other ->
-			io:format("fsm_emergency: received garbage: ~p~n", [Other]),
-			st_emergency()
 	end.

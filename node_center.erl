@@ -2,9 +2,12 @@
 -export([start/0]).
 
 % central module which starts all required processes
-% and ensures everything is running
-
-%TODO
+% and ensures everything is initialized in the proper
+% order.
+% all processes in a node are as follows:
+% node_center, driver, worldview, network, event_manager
+% order_manager, fsm, update_worldviews, order_distributor
+% order_receiver
 
 start() ->
 	register(node_center, self()),

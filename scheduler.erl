@@ -27,6 +27,7 @@ scheduler([], _, _) ->
 scheduler(WorldViews, Order, Cost) ->
 	% returns the ID of the node that is considered to
 	% be the best fit for the order.
+
 	[WorldView|RestViews] = WorldViews,
 	CurrentCost = get_cost(WorldView, Order),
 	case CurrentCost < Cost of
@@ -50,6 +51,7 @@ get_cost(WorldView, Order) ->
 
 member(WorldView, Order) ->
 	%returns 0 if Order already exists in WorldView
+
 	Orders = element(4, WorldView),
 	case lists:member(Order, Orders) of
 		true -> 0;
@@ -64,6 +66,7 @@ get_distance(WorldView, Order) ->
 	% returns distance between current distance and order
 	% floor. Currently regardless of the direction the elevator
 	% must travel before taking it.
+
 	LastFloor = element(3, WorldView),
 	OrderFloor = element(1, Order),
 	abs(LastFloor - OrderFloor).
@@ -85,6 +88,7 @@ init(WorldView) ->
 	% returns 1 if the node is in the init state.
 	% elevator should not take an order during this
 	% state, as not all processes are running yet.
+
 	State = element(2, WorldView),
 	case State == init of
 		true ->
@@ -98,6 +102,7 @@ direction_change(WorldView, Order) ->
 	% i.e. if there are only hall_up and cab-orders, adding
 	% hall_down will be penalized. If both directions are 
 	% represented, it will no longer be penalized.
+	
  	OrderDir = element(2, Order),
  	Orders = element(4, WorldView),
  	case OrderDir of

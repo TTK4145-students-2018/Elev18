@@ -6,7 +6,8 @@
 
 % Poller of our system, currently listening for order-button-presses of all
 % types in all floors, as well as floor sensor. Sends information to fsm and
-% worldview.
+% worldview. Each button-type has its own process, iterating through the
+% different buttons of that type.
 
 start() ->
     spawn(fun() -> floor_sensor_poller(1) end),
@@ -40,7 +41,6 @@ floor_sensor_poller(LastState) ->
 	end.
 
 
-
 button_poller(4, cab) ->
 	button_poller(0, cab);
 
@@ -66,15 +66,15 @@ button_poller(Floor, ButtonType) ->
 	end.
 
 
-event_handler() ->
-	1.
-
 reset_button(4, cab) ->
 	1;
+
 reset_button(4, hall_down) ->
 	1;
+
 reset_button(3, hall_up) ->
 	1;
+	
 reset_button(Floor, ButtonType) ->
 	driver:set_order_button_light(driver, ButtonType, Floor, off),
 	reset_button(Floor + 1, ButtonType).

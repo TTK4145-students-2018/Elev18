@@ -5,6 +5,9 @@ start() ->
 	order_manager([]).
 
 order_manager(Orders) ->
+	% keeps all local orders in a node, i.e. the orders scheduled
+	% for completion locally within the node.
+
 	receive 
 		{add, Order} ->
 			io:format("order_manager: adding order: ~p~n", [Order]),
@@ -15,22 +18,27 @@ order_manager(Orders) ->
 			worldview ! {orders, NewOrders},
 			io:format("order_manager: new orders: ~p~n", [NewOrders]),
 			order_manager(NewOrders);
+
 		{remove, Floor} ->
 			io:format("order_manager: removing order: ~p~n", [Floor]),
 			NewOrders = remove_order(Orders, Floor),
 			worldview ! {orders, NewOrders},
 			io:format("order_manager: new orders: ~p~n", [NewOrders]),
 			order_manager(NewOrders);
+
 		{clear} ->
 			io:format("order_manager: clearing orders ~n"),
 			worldview ! {orders, []},
 			order_manager([]);
+
 		{get_first, Pid} ->
 			Pid ! get_first(Orders),
 			order_manager(Orders);
+
 		{get_all, Pid} ->
 			Pid ! {orders, Orders},
 			order_manager(Orders);
+
 		{request_new_order} ->
 			case get_first(Orders) of
 				-1 -> fsm ! {no_orders};
@@ -76,6 +84,7 @@ remove_order(Orders, Floor) ->
 			Orders
 	end.
 
+
 find_position([_|[]], _, Position) ->
 	Position;
 
@@ -84,6 +93,7 @@ find_position([PrevOrder|NextOrders], Order, Position) ->
 	% NB! START WITH Position = 2, as ideal_first is used for the edge
 	% case of checking if the order can be placed at the very beginning.
 	% Calling it with Position = 1 would return one value too low.
+
 	OrderFloor = element(1, Order),
 	OrderDir = element(2, Order),
 	[NextOrder|_] = NextOrders,
@@ -95,6 +105,7 @@ find_position([PrevOrder|NextOrders], Order, Position) ->
 ideal_first(NextOrder, WorldView, OrderFloor, OrderDir) ->
 	% returns true if the order can be placed at the front of list, i.e. it
 	% can do the order before the initial first order
+
 	Position = element(3, WorldView),
 	NextFloor = element(1, NextOrder),
 	NextDir = element(2, NextOrder),
@@ -111,6 +122,7 @@ ideal_first(NextOrder, WorldView, OrderFloor, OrderDir) ->
 
 ideal(PrevOrder, NextOrder, OrderFloor, hall_down) ->
 	% returns true if position between prevorder and nextorder is gucci
+	
 	LastFloor = element(1, PrevOrder),
 	LastDir = element(2, PrevOrder),
 	NextFloor = element(1, NextOrder),

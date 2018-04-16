@@ -1,12 +1,12 @@
 -module(worldview).
 -export([start/0, get_direction/1]).
 
-%WorldView = {ID, state, last_floor, orders, direction}
-%ID from the get-go
-%state from fsm
-%last_floor from fsm
-%orders from order_manager
-%direction from fsm
+% WorldView = {ID, state, last_floor, orders, direction}
+% ID from the get-go
+% state from fsm
+% last_floor from fsm
+% orders from order_manager
+% direction from fsm
 
 start() ->
 	receive {id, ID} -> ok end,
@@ -14,8 +14,10 @@ start() ->
 	receive {network, init_complete} -> ok end,
 	world(WorldView).
 
-
 world(WorldView) ->
+	% keeps track of the local WorldView, which is a tuple with
+	% elements representing the aforementioned states of the node.
+	
 	update_worldviews ! {self, wv, WorldView},
 	receive
 		{state, State} ->
