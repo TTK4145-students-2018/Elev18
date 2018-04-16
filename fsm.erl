@@ -16,7 +16,7 @@ st_init() ->
 			io:format("fsm: elevator initialized, behold my initial glory ~n"),
 			driver:set_motor_direction(driver, stop),
 			st_idle();
-		Other ->
+		_Other ->
 			st_init()
 
 	after 10000 ->
@@ -33,7 +33,7 @@ st_idle() ->
 		{no_orders} ->
 			st_idle();
 
-		Other ->
+		_Other ->
 			st_idle()
 	end.
 
@@ -67,7 +67,7 @@ st_moving() ->
 					st_moving()
 			end;
 
-		Other ->
+		_Other ->
 			st_moving()
 	end.
 
