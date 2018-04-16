@@ -159,12 +159,17 @@ reevaluate(Orders, WorldViews, OwnID) ->
 	% dead node, and adds them to appropriate node. If id returned from
 	% scheduler matches OwnID, the order is added.
 	[First|Rest] = Orders,
-	case (scheduler:scheduler(WorldViews, First) == OwnID) of
-		true ->
-			order_manager ! {add, First},
+	case element(2, First) of
+		cab ->
 			reevaluate(Rest, WorldViews, OwnID);
-		false ->
-			reevaluate(Rest, WorldViews, OwnID)
+		_ ->
+			case (scheduler:scheduler(WorldViews, First) == OwnID) of
+				true ->
+					order_manager ! {add, First},
+					reevaluate(Rest, WorldViews, OwnID);
+				false ->
+					reevaluate(Rest, WorldViews, OwnID)
+			end
 	end.
 
 node_watcher(Node) ->
